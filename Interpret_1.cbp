@@ -45,8 +45,11 @@
 		<Unit filename="MyQueue.h" />
 		<Unit filename="MyString.cpp" />
 		<Unit filename="MyString.h" />
+		<Unit filename="MyStringSTL.cpp" />
+		<Unit filename="MyStringSTL.h" />
 		<Unit filename="MyVariable.cpp" />
 		<Unit filename="MyVariable.h" />
+		<Unit filename="MyVector.h" />
 		<Unit filename="PrintTree.cpp" />
 		<Unit filename="PrintTree.h" />
 		<Unit filename="SignedBigInt.cpp" />

@@ -1,13 +1,13 @@
 #ifndef MYANALYSIS_H_INCLUDED
 #define MYANALYSIS_H_INCLUDED
 
-#include <string>
 #include <ctype.h>
-#include <stdlib.h>
 #include <map>
 #include <set>
 
 #include "MyVariable.h"
+#include "MyString.h"
+//#include "MyStringSTL.h"
 
 #define MAX_CHILD 3
 
@@ -98,7 +98,33 @@ struct NODE {
         Init(_type);
     }
     ~NODE() {
-        delete sth;
+        del();
+    }
+    void del() {
+        if (!sth) return;
+        switch (type) {
+        case IS_CONSTANT:
+        case IS_VARIABLE:
+            delete (CONST_OR_VARIABLE*)sth;
+            break;
+        case IS_OPERATOR:
+            delete (OPERATOR*)sth;
+            break;
+        case IS_KEY_WORD:
+            delete (KEY_WORD*)sth;
+            break;
+        case IS_STRUCTURE:
+            delete (STRUCTURE*)sth;
+            break;
+        case IS_SYS_FUNC:
+            delete (SYS_FUNC*)sth;
+            break;
+        case IS_USER_FUNC:
+            delete (string*)sth;
+            break;
+        case IS_NIL:
+            break;  //skip
+        }
     }
     void Init(NodeType _type) {
         type = _type;

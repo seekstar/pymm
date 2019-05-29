@@ -1,12 +1,12 @@
 #ifndef MYVARIABLE_H_INCLUDED
 #define MYVARIABLE_H_INCLUDED
 
-#include <string>
 #include <assert.h>
 
 #include "MyFlags.h"
 #include "MyInteger.h"
 #include "MyMatrix.h"
+//#include "MyStringSTL.h"
 
 using namespace std;
 
@@ -28,9 +28,23 @@ struct VARIABLE{
     ~VARIABLE() {
         ;
     }
+    void del() {
+        if (!val) return;
+        switch (type) {
+        case IS_INTEGER:
+            delete (IntType*)val;
+            break;
+        case IS_DOUBLE:
+            delete (double*)val;
+            break;
+        case IS_MATRIX:
+            delete (MATRIX*)val;
+            break;
+        }
+    }
     VARIABLE& Copy(const VARIABLE& rhs)
     {
-        delete val;
+        del();
         type = rhs.type;
         switch (type) {
         case IS_INTEGER:
@@ -489,7 +503,7 @@ struct CONST_OR_VARIABLE{
     }*/
     void del() {
         if (!left_value && val) {
-            delete val->val;
+            val->del();
         }
     }
     bool Copy(const CONST_OR_VARIABLE& rhs, string& information)

@@ -2,6 +2,6 @@
 
 void ErrMsg(string& info, const char msg[], const int& sth) {
     static char tmp[20];
-    MyAtoi(tmp, sth);
+    MyItoa(tmp, sth);
     ((info += msg) += tmp) += '\n';
 }

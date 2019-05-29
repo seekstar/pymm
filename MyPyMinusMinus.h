@@ -2,7 +2,6 @@
 #define MYPYMINUSMINUS_H_INCLUDED
 
 #include <vector>
-#include <string>
 #include <map>
 #include <set>
 #include <unordered_map>
@@ -12,6 +11,7 @@
 #include "MyAnalysis.h"
 #include "MyFlags.h"
 #include "MyError.h"
+//#include "MyStringSTL.h"
 
 #if DEBUG
 #include "PrintTree.h"
@@ -131,7 +131,7 @@ struct PYMM{
     }
     bool Input(const char* str, string& information){
         vector<StrExpr> strExpr;
-        NODE* root;
+        NODE* root = NULL;
         CONST_OR_VARIABLE ans;
 
         if(IsEmptyString(str))
@@ -148,7 +148,7 @@ struct PYMM{
             return FAIL;
 
 #if DEBUG
-		PrintTree(cout, root);
+        PrintTree(cout, root);
 #endif
 
         if (FAIL == CalcByTree(ans, root, information))
@@ -262,6 +262,7 @@ struct PYMM{
                         break;
                     case RIGHT_PARENTHESIS:
                         while (!operator_sta.empty()) {
+                            assert(operator_sta.top());
                             OPERATOR top_op = operator_sta.top()->op();
                             operator_sta.top()->child[numOfOperands[top_op]-1] = operand;
                             operand = operator_sta.top();
@@ -293,8 +294,10 @@ struct PYMM{
                         break;
                     }
                     while (!operator_sta.empty()) {
+                        assert(operator_sta.top());
                         OPERATOR top_op = operator_sta.top()->op();
-                        if(priority[op] > priority[top_op] ||
+                        //The smaller, the more prior
+                        if(priority[op] < priority[top_op] ||
                            (priority[op] == priority[top_op] && associative[op] == RIGHT_ASSOCIATIVE))
                         {
                             break;
@@ -314,6 +317,7 @@ struct PYMM{
                 ErrMsg(information, "No such a node type ", now->type);
             }
         }
+        assert(operator_sta.top());
         AddOperandToLastChild(operator_sta.top(), operand);
         operator_sta.pop();
 

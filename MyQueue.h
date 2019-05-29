@@ -15,7 +15,7 @@ struct MyQueue {
         clear();
     }
     ~MyQueue() {
-        free(base);
+        //delete base;
     }
 
     void clear() {
@@ -48,6 +48,7 @@ struct MyQueue {
         base = new value_type[cap];
         int i = 0;
         do {
+			//swap(base[i++], tmp[head]);
 			base[i++] = tmp[head];
 			AddMod(++head, old_cap);
         } while (head != tail);
