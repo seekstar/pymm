@@ -1,0 +1,129 @@
+enum INT_TYPE{
+    IS_INT,
+    IS_BIG
+};
+
+inline IsOverflow(int ans, int a, int b){
+    return a < 0 && b < 0 && ans > 0 || a > 0 && b > 0 && ans < 0;
+}
+
+struct INTEGER{
+    INT_TYPE type;
+    void* val;
+    INTEGER operator + (const INTEGER& rhs) const {
+        static INTEGER ans;
+        switch (type) {
+        case IS_INT:
+            switch (rhs.type) {
+            case IS_INT:
+                ans.val = new int;
+                *(int*)ans.val = *(int*)val + *(int*)rhs.val;
+                if(IsOverflow(*(int*)ans.val, *(int*)val, *(int*)rhs.val)){
+                    ans.type = IS_BIG;
+                    delete ans.val;
+                    ans.val = new BigInt;
+                    *(BigInt)ans.val = *(int*)val;
+                    *(BigInt)ans.val += *(int*)rhs.val;
+                }else{
+                    ans.type = IS_INT;
+                }
+            case IS_BIG:
+                ans.val = new BigInt;
+                *(BitInt*)ans.val = *(BigInt*)rhs.val;
+                *(BigInt*)ans.val += *(int*)val;
+            }
+        case IS_BIG:
+            ans.val = BigInt;
+            ans.val = new BigInt;
+            switch (rhs.type) {
+            case IS_INT:
+                
+            }
+        }
+        return ans;
+    }
+};
+
+
+
+
+
+
+
+VARIABLE ALU(const IntType& lhs, const IntType& rhs, OP)
+{
+	static VARIABLE ans;
+	ans.type = IS_INTEGER;
+	ans.val = new IntType;
+	*ans.val = lhs * rhs;
+	return ans;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+bool Parsing(NODE*& root, vector<StrExpr>::const_iterator now, string& information){
+        stack<OPERAND_OR_OPERATOR>sta;
+        static CONST_OR_VARIABLE operand;
+
+        if(now->type == IS_NIL){
+            root = NULL;
+            return true;
+        } else {
+            switch (now->type){
+            case IS_CONSTANT:
+                operand.vari = false;
+                GetConst(operand.val, now->name.c_str());
+                sta.push(operand);
+                break;
+            case IS_OPERATOR:
+                if (now->name == ")") {
+                    root = NULL;
+
+                } else if (now->name == "(") {
+
+                }
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+NODE(){}
+    NODE(NodeType _type)
+    {
+        type = _type;
+        switch (type) {
+        case IS_CONSTANT:
+        case IS_VARIABLE:
+            val.val.val = NULL;
+            break;
+        }
+    }
+    ~NODE()
+    {
+        switch (type) {
+        case IS_CONSTANT:
+        case IS_VARIABLE:
+            if (val.left_value) {
+                delete val.val.val;
+            }
+            break;
+        }
+    }

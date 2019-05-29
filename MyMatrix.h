@@ -1,0 +1,6 @@
+#ifndef MYMATRIX_H_INCLUDED
+#define MYMATRIX_H_INCLUDED
+
+typedef int MATRIX;
+
+#endif // MYMATRIX_H_INCLUDED
