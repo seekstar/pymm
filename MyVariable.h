@@ -466,7 +466,6 @@ struct VARIABLE{
 		return *this = *this / rhs;
     }
 
-    #if DEBUG
     void Print(ostream& out)
     {
         switch (type) {
@@ -481,7 +480,6 @@ struct VARIABLE{
             break;
         }
     }
-    #endif // DEBUG
 };
 
 struct CONST_OR_VARIABLE{
@@ -569,12 +567,10 @@ struct CONST_OR_VARIABLE{
         return *this;
     }
 
-    #if DEBUG
     void Print(ostream& out)
     {
         val->Print(out);
     }
-    #endif // DEBUG
 };
 
 bool IsBeginningOfConst(char ch);

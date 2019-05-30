@@ -144,7 +144,8 @@ struct PYMM{
         PrintStrExpr(strExpr);
         #endif // DEBUG
 
-        if (FAIL == Parsing_dfs(root, strExpr.begin(), information))
+        auto now = strExpr.begin();
+        if (FAIL == Parsing_dfs(root, now, information))
             return FAIL;
 
 #if DEBUG
@@ -203,7 +204,7 @@ struct PYMM{
         return status;
     }
 
-    bool Parsing_dfs(NODE*& operand, vector<StrExpr>::const_iterator now, string& information) {
+    bool Parsing_dfs(NODE*& operand, vector<StrExpr>::iterator& now, string& information) {
         stack<NODE*>operator_sta;
 
         enum ERROR_TYPE
@@ -258,16 +259,11 @@ struct PYMM{
                 case 0:
                     switch (op) {
                     case LEFT_PARENTHESIS:
-                        Parsing_dfs(operand, now, information);
+                        Parsing_dfs(operand, ++now, information);
+                        --now;  //because the for loop will increase it soon.
                         break;
                     case RIGHT_PARENTHESIS:
-                        while (!operator_sta.empty()) {
-                            assert(operator_sta.top());
-                            OPERATOR top_op = operator_sta.top()->op();
-                            operator_sta.top()->child[numOfOperands[top_op]-1] = operand;
-                            operand = operator_sta.top();
-                            operator_sta.pop();
-                        }
+                        PopAllOperators(operator_sta, operand);
                         finish = true;
                         break;
                     default:
@@ -317,9 +313,7 @@ struct PYMM{
                 ErrMsg(information, "No such a node type ", now->type);
             }
         }
-        assert(operator_sta.top());
-        AddOperandToLastChild(operator_sta.top(), operand);
-        operator_sta.pop();
+        PopAllOperators(operator_sta, operand);
 
         switch (error_type) {
         case NO_OPERAND_BEFORE:

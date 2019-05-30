@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <map>
 #include <set>
+#include <stack>
 
 #include "MyVariable.h"
 #include "MyString.h"
@@ -191,7 +192,6 @@ struct NODE {
         return *(string*)sth;
     }
 
-    #if DEBUG
     void PrintNode(ostream& out) {
         switch (type) {
         case IS_CONSTANT:
@@ -218,7 +218,6 @@ struct NODE {
             break;
         }
     }
-	#endif // DEBUG
 };
 
 struct OPERAND_OR_OPERATOR {
@@ -239,6 +238,7 @@ extern map<string, SYS_FUNC> sys_func_code;
 
 NODE* OperandBecomeLeftChild(OPERATOR op, NODE*& operand);
 void AddOperandToLastChild(NODE* op, NODE*& operand);
+void PopAllOperators(stack<NODE*>& operator_sta, NODE*& operand);
 
 #if DEBUG
 void PrintStrExpr(const vector<StrExpr> strExpr);

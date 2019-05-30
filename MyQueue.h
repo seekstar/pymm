@@ -15,7 +15,7 @@ struct MyQueue {
         clear();
     }
     ~MyQueue() {
-        //delete base;
+        delete[] base;
     }
 
     void clear() {

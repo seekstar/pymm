@@ -147,6 +147,16 @@ void AddOperandToLastChild(NODE* op, NODE*& operand) {
     operand = op;
 }
 
+void PopAllOperators(stack<NODE*>& operator_sta, NODE*& operand) {
+    while (!operator_sta.empty()) {
+        assert(operator_sta.top());
+        OPERATOR top_op = operator_sta.top()->op();
+        operator_sta.top()->child[numOfOperands[top_op]-1] = operand;
+        operand = operator_sta.top();
+        operator_sta.pop();
+    }
+}
+
 #if DEBUG
 void PrintStrExpr(const vector<StrExpr> strExpr)
 {
