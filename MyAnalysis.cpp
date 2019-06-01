@@ -320,7 +320,7 @@ bool LexicalAnalysis(vector<StrExpr>& strExpr, const char* str, ostream& info) {
 
 bool Parsing_dfs(NODE*& operand, vector<StrExpr>::iterator& now, ostream& info) {
     stack<NODE*>operator_sta;
-       
+
     ERROR_TYPE error_type = NO_ERROR;
 
     bool finish = false;
@@ -443,83 +443,89 @@ void Parsing_IS_OPERATOR(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>
 }
 
 bool CalcByTree(CONST_OR_VARIABLE& ans, const NODE* root, bool create_variable, unordered_map<string, VARIABLE>& variable_table, ostream& info) {
-        bool result = SUCCEED;
-		unordered_map<string, VARIABLE>::iterator it;
+    bool result = SUCCEED;
+	unordered_map<string, VARIABLE>::iterator it;
 
-        CONST_OR_VARIABLE ans1;
-        CONST_OR_VARIABLE ans2;
-        switch (root->type) {
-        case IS_CONSTANT:
-            ans = root->constant();
-			break;
-        case IS_VARIABLE:
-			ans.Init(true, true);
-			it = variable_table.find(root->variable());
-			if (it == variable_table.end()) {
-				if (create_variable) {
-					ans.val = &variable_table[root->variable()];
-				} else {
-					info << "No such a variable " << root->variable() << '\n';
-					result = FAIL;
-				}
+    switch (root->type) {
+    case IS_CONSTANT:
+        ans = root->constant();
+		break;
+    case IS_VARIABLE:
+		ans.Init(true, true);
+		it = variable_table.find(root->variable());
+		if (it == variable_table.end()) {
+			if (create_variable) {
+				ans.val = &variable_table[root->variable()];
 			} else {
-				ans.val = &it->second;
+				info << "No such a variable " << root->variable() << '\n';
+				result = FAIL;
 			}
-            break;
-        case IS_OPERATOR:
-            switch (root->op()) {
-            case ASSIGN:
-                FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], true, variable_table, info));
-                FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
-                FAIL_THEN_RETURN(ans.Copy(ans2, info));
-                #if DEBUG
-                cerr << "ans = " << *(IntType*)ans.val->val << endl;
-                cerr << "ans2 = " << *(IntType*)ans2.val->val << endl;
-                #endif // DEBUG
-                break;
-            case ADD:
-                FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
-                #if DEBUG
-                cerr << "ans1 = " << *(IntType*)ans1.val->val << endl;
-                #endif // DEBUG
-                FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
-                #if DEBUG
-                cerr << "ans2 = " << *(IntType*)ans2.val->val << endl;
-                cerr << endl;
-                #endif // DEBUG
-                ans = ans1 + ans2;
-                #if DEBUG
-                cerr << *(IntType*)ans.val->val << endl;
-                #endif // DEBUG
-                break;
-            case SUB:
-                FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
-                FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
-                ans = ans1 - ans2;
-                break;
-            case MUL:
-                FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
-                FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
-                ans = ans1 * ans2;
-                break;
-            case DIV:
-                FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
-                FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
-                ans = ans1 / ans2;
-                break;
-            default:
-                ErrMsg(info, "No such an operator ", root->op());
-                break;
-            }
-            break;
-        default:
-            ErrMsg(info, "No such an operator ", root->op());
-            break;
-        }
-        ans1.del();
-        ans2.del();
-        return result;
+		} else {
+			ans.val = &it->second;
+		}
+        break;
+    case IS_OPERATOR:
+		CalcByTree_IS_OPERATOR(root, ans, variable_table, info);
+        break;
+    default:
+        ErrMsg(info, "No such an operator ", root->op());
+        break;
     }
+    return result;
+}
+
+bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_map<string, VARIABLE>& variable_table, ostream& info) {
+    CONST_OR_VARIABLE ans1;
+    CONST_OR_VARIABLE ans2;
+	switch (root->op()) {
+    case ASSIGN:
+        FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], true, variable_table, info));
+        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
+        FAIL_THEN_RETURN(ans.Copy(ans2, info));
+        #if DEBUG
+        cerr << "ans = " << *(IntType*)ans.val->val << endl;
+        cerr << "ans2 = " << *(IntType*)ans2.val->val << endl;
+        #endif // DEBUG
+        break;
+    case ADD:
+        FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
+        #if DEBUG
+        cerr << "ans1 = " << *(IntType*)ans1.val->val << endl;
+        #endif // DEBUG
+        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
+        #if DEBUG
+        cerr << "ans2 = " << *(IntType*)ans2.val->val << endl;
+        cerr << endl;
+        #endif // DEBUG
+        ans = ans1 + ans2;
+        #if DEBUG
+        cerr << *(IntType*)ans.val->val << endl;
+        #endif // DEBUG
+        break;
+    case SUB:
+        FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
+        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
+        ans = ans1 - ans2;
+        break;
+    case MUL:
+        FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
+        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
+        ans = ans1 * ans2;
+        break;
+    case DIV:
+        FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
+        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
+        ans = ans1 / ans2;
+        break;
+    default:
+        ErrMsg(info, "No such an operator ", root->op());
+        break;
+    }
+    ans1.del();
+    ans2.del();
+	return SUCCEED;
+}
+
 #if DEBUG
 void PrintStrExpr(const vector<StrExpr> strExpr)
 {
@@ -529,3 +535,4 @@ void PrintStrExpr(const vector<StrExpr> strExpr)
     cout << endl;
 }
 #endif
+

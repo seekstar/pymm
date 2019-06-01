@@ -241,6 +241,8 @@ struct OPERAND_OR_OPERATOR {
     };
 };
 
+
+
 enum ERROR_TYPE
 {
     NO_ERROR,
@@ -249,10 +251,15 @@ enum ERROR_TYPE
 };
 
 bool LexicalAnalysis(vector<StrExpr>& strExpr, const char* str, ostream& info);
+
 bool Parsing_dfs(NODE*& operand, vector<StrExpr>::iterator& now, ostream& info);
 void Parsing_IS_CONSTANT(NODE*& operand, ERROR_TYPE& error_type, const vector<StrExpr>::iterator& now, bool& finish);
 void Parsing_IS_OPERATOR(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>::iterator& now,  stack<NODE*>& operator_sta, bool& finish, ostream& info);
+
 bool CalcByTree(CONST_OR_VARIABLE& ans, const NODE* root, bool create_variable, unordered_map<string, VARIABLE>& variable_table, ostream& info);
+bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_map<string, VARIABLE>& variable_table, ostream& info);
+
+
 
 extern map<string, OPERATOR> operator_code;
 extern map<OPERATOR, int>priority;
@@ -270,6 +277,7 @@ bool IsPartOfVariableOrFunc(char ch);
 bool IsAnOperator(const string& sth);
 bool IsSysFunc(const string& sth);
 bool IsKeyWord(const string& sth);
+
 
 
 NODE* OperandBecomeLeftChild(OPERATOR op, NODE*& operand);
