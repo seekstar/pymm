@@ -5,11 +5,13 @@
 #include <map>
 #include <set>
 #include <stack>
+#include <unordered_map>
 
 #include "MyVariable.h"
 #include "MyString.h"
 #include "MyError.h"
 #include "MyFlags.h"
+//#include "MyPyMinusMinus.h"
 //#include "MyStringSTL.h"
 
 #define MAX_CHILD 3
@@ -246,9 +248,11 @@ enum ERROR_TYPE
     UNEXPECTED_OPERAND,
 };
 
+bool LexicalAnalysis(vector<StrExpr>& strExpr, const char* str, ostream& info);
 bool Parsing_dfs(NODE*& operand, vector<StrExpr>::iterator& now, ostream& info);
 void Parsing_IS_CONSTANT(NODE*& operand, ERROR_TYPE& error_type, const vector<StrExpr>::iterator& now, bool& finish);
 void Parsing_IS_OPERATOR(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>::iterator& now,  stack<NODE*>& operator_sta, bool& finish, ostream& info);
+bool CalcByTree(CONST_OR_VARIABLE& ans, const NODE* root, bool create_variable, unordered_map<string, VARIABLE>& variable_table, ostream& info);
 
 extern map<string, OPERATOR> operator_code;
 extern map<OPERATOR, int>priority;
@@ -257,6 +261,8 @@ extern map<OPERATOR, bool>associative;
 extern set<char>symbols;
 extern map<string, KEY_WORD> key_word_code;
 extern map<string, SYS_FUNC> sys_func_code;
+
+void Init(void);
 
 bool IsSymbol(char ch);
 bool IsBeginOfVarialbeOrFunc(char ch);
