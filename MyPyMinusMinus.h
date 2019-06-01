@@ -42,11 +42,11 @@ struct PYMM{
         FAIL_THEN_RETURN(CalcByTree(ans, root, false, variable_table, info));
 
         info << ToString(*ans.val);
+		ans.del();
 
         return SUCCEED;
     }
-
-    
 };
 
 #endif // MYPYMINUSMINUS_H_INCLUDED
+
