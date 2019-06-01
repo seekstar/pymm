@@ -490,10 +490,8 @@ struct CONST_OR_VARIABLE{
     CONST_OR_VARIABLE() {
         val = NULL;
     }
-    CONST_OR_VARIABLE(bool _vari, bool lv) {
-        val = NULL;
-        vari = _vari;
-        left_value = lv;
+    CONST_OR_VARIABLE(bool vari, bool lv) {
+        Init(vari, lv);
     }
     /*~CONST_OR_VARIABLE()
     {
@@ -504,13 +502,18 @@ struct CONST_OR_VARIABLE{
             val->del();
         }
     }
-    bool Copy(const CONST_OR_VARIABLE& rhs, string& information)
+    void Init(bool _vari, bool lv) {
+        val = NULL;
+        vari = _vari;
+        left_value = lv;
+    }
+    bool Copy(const CONST_OR_VARIABLE& rhs, ostream& info)
     {
         if(left_value && vari) {
             val->Copy(*rhs.val);
             return SUCCEED;
         } else {
-            information += "Error: Assign to a right value or a constant value\n";
+            info << "Error: Assign to a right value or a constant value\n";
             return FAIL;
         }
     }

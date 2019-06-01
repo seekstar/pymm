@@ -5,6 +5,6 @@
 #include "MyAnalysis.h"
 //#include "MyStringSTL.h"
 
-void ErrMsg(string& info, const char msg[], const int& sth);
+void ErrMsg(ostream& info, const char msg[], const int& sth);
 
 #endif // MYERROR_H_INCLUDED

@@ -106,6 +106,7 @@ struct NODE {
         switch (type) {
         case IS_CONSTANT:
         case IS_VARIABLE:
+			((CONST_OR_VARIABLE*)sth)->del();
             delete (CONST_OR_VARIABLE*)sth;
             break;
         case IS_OPERATOR:
@@ -134,7 +135,7 @@ struct NODE {
             sth = new CONST_OR_VARIABLE(false, true);
             break;
         case IS_VARIABLE:
-            sth = new CONST_OR_VARIABLE(true, true);
+			sth = new string;
             break;
         case IS_OPERATOR:
             sth = new OPERATOR;
@@ -158,12 +159,18 @@ struct NODE {
             break;
         }
     }
-    CONST_OR_VARIABLE& val() {
+    CONST_OR_VARIABLE& constant() {
         return *(CONST_OR_VARIABLE*)sth;
     }
-    const CONST_OR_VARIABLE& val() const {
+    const CONST_OR_VARIABLE& constant() const {
         return *(const CONST_OR_VARIABLE*)sth;
     }
+	string& variable() {
+		return *(string*)sth;
+	}
+	const string& variable() const {
+		return *(const string*)sth;
+	}
     OPERATOR& op() {
         return *(OPERATOR*)sth;
     }
@@ -195,8 +202,10 @@ struct NODE {
     void PrintNode(ostream& out) {
         switch (type) {
         case IS_CONSTANT:
-        case IS_VARIABLE:
             ((CONST_OR_VARIABLE*)sth)->Print(out);
+            break;
+        case IS_VARIABLE:
+			out << *(string*)sth;
             break;
         case IS_OPERATOR:
             out << OperatorName(*(OPERATOR*)sth);

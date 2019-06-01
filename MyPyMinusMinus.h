@@ -129,7 +129,7 @@ struct PYMM{
     bool IsSysFunc(const string& sth){
         return sys_func_code.find(sth) != sys_func_code.end();
     }
-    bool Input(const char* str, string& information){
+    bool Input(const char* str, ostream& info){
         vector<StrExpr> strExpr;
         NODE* root = NULL;
         CONST_OR_VARIABLE ans;
@@ -137,32 +137,32 @@ struct PYMM{
         if(IsEmptyString(str))
             return SUCCEED;
 
-        if (FAIL == LexicalAnalysis(strExpr, str, information))
-            return FAIL;
+        FAIL_THEN_RETURN(LexicalAnalysis(strExpr, str, info));
 
         #if DEBUG
         PrintStrExpr(strExpr);
         #endif // DEBUG
 
         auto now = strExpr.begin();
-        if (FAIL == Parsing_dfs(root, now, information))
-            return FAIL;
+        FAIL_THEN_RETURN(Parsing_dfs(root, now, info));
 
 #if DEBUG
         PrintTree(cout, root);
 #endif
 
-        if (FAIL == CalcByTree(ans, root, information))
-            return FAIL;
-        information += ToString(*ans.val);
+        FAIL_THEN_RETURN(CalcByTree(ans, root, false, info));
+
+        info << ToString(*ans.val);
+
         return SUCCEED;
     }
-    bool LexicalAnalysis(vector<StrExpr>& strExpr, const char* str, string& information) {
+    bool LexicalAnalysis(vector<StrExpr>& strExpr, const char* str, ostream& info) {
         string sth;
         bool status = SUCCEED;
         for (; *str;) {
             sth.clear();
             SkipSpace(str);
+			//Is the beginning of a variable or function or key word.
             if(IsBeginOfVarialbeOrFunc(*str)){
                 do{
                     sth.push_back(*str++);
@@ -185,7 +185,7 @@ struct PYMM{
                 sth.pop_back();
                 --str;
                 if (sth.empty()) {
-                    ((information += "Unknown character ") += *str) += " \n";
+					info << "Unknown chracter " << *str << '\n';
                     status = FAIL;
                     break;
                 }
@@ -194,7 +194,7 @@ struct PYMM{
                 GetConst(sth, str);
                 strExpr.push_back(StrExpr{IS_CONSTANT, sth});
             }else if(!isspace(*str)){
-                (((information += "Unknown character \"") += *str) += "\"!\n");
+				info << "Unknown character \"" << *str << "\"!\n";
                 status = FAIL;
                 break;
             }
@@ -204,7 +204,7 @@ struct PYMM{
         return status;
     }
 
-    bool Parsing_dfs(NODE*& operand, vector<StrExpr>::iterator& now, string& information) {
+    bool Parsing_dfs(NODE*& operand, vector<StrExpr>::iterator& now, ostream& info) {
         stack<NODE*>operator_sta;
 
         enum ERROR_TYPE
@@ -212,7 +212,6 @@ struct PYMM{
             NO_ERROR,
             NO_OPERAND_BEFORE,
             UNEXPECTED_OPERAND,
-            NO_SUCH_A_VARIABLE
         };
         ERROR_TYPE error_type = NO_ERROR;
 
@@ -229,18 +228,15 @@ struct PYMM{
                     break;
                 }
                 operand = new NODE(IS_CONSTANT);
-                operand->val().val = new VARIABLE;
-                GetConst(*operand->val().val, now->name.c_str());
+                operand->constant().val = new VARIABLE;
+                GetConst(*operand->constant().val, now->name.c_str());
+                /*#if DEBUG
+                cerr << "operand: " << *(IntType*)operand->constant().val->val << endl;
+                #endif*/ // DEBUG
                 break;
             case IS_VARIABLE:
-                it = variable_table.find(now->name);
-                if (it == variable_table.end()) {
-                    error_type = NO_SUCH_A_VARIABLE;
-                    break;
-                }
                 operand = new NODE(IS_VARIABLE);
-                operand->type = IS_VARIABLE;
-                operand->val().val = &variable_table[now->name];
+                operand->variable() = now->name;
                 break;
             case IS_OPERATOR:
                 if (now->name == "-") {
@@ -252,14 +248,14 @@ struct PYMM{
                 } else {
                     op = operator_code[now->name];
                 }
-                #if DEBUG
+                /*#if DEBUG
                 cerr << "operator code = " << op << endl;
-                #endif
+                #endif*/
                 switch (numOfOperands[op]) {
                 case 0:
                     switch (op) {
                     case LEFT_PARENTHESIS:
-                        Parsing_dfs(operand, ++now, information);
+                        Parsing_dfs(operand, ++now, info);
                         --now;  //because the for loop will increase it soon.
                         break;
                     case RIGHT_PARENTHESIS:
@@ -267,7 +263,7 @@ struct PYMM{
                         finish = true;
                         break;
                     default:
-                        ErrMsg(information, "Unexpected operator code ", op);
+                        ErrMsg(info, "Unexpected operator code ", op);
                         break;
                     }
                     break;
@@ -279,7 +275,7 @@ struct PYMM{
                         operator_sta.push(tmp);
                         break;
                     default:
-                        ErrMsg(information, "Unexpected operator code ", op);
+                        ErrMsg(info, "Unexpected operator code ", op);
                         break;
                     }
                     break;
@@ -310,20 +306,17 @@ struct PYMM{
                 }
                 break;
             default:
-                ErrMsg(information, "No such a node type ", now->type);
+                ErrMsg(info, "No such a node type ", now->type);
             }
         }
         PopAllOperators(operator_sta, operand);
 
         switch (error_type) {
         case NO_OPERAND_BEFORE:
-            information += "No operand before the operator " + now->name + '\n';
+			info << "No operand before the operator " << now->name << '\n';
             break;
         case UNEXPECTED_OPERAND:
-            information += "Unexpected operand " + now->name + '\n';
-            break;
-        case NO_SUCH_A_VARIABLE:
-            information += "No such a variable " + now->name;
+			info << "Unexpected operand " << now->name << '\n';
             break;
         default:
             //skip
@@ -333,29 +326,48 @@ struct PYMM{
         return error_type == NO_ERROR ? SUCCEED : FAIL;
     }
 
-    bool CalcByTree(CONST_OR_VARIABLE& ans, const NODE* root, string& information)
+    bool CalcByTree(CONST_OR_VARIABLE& ans, const NODE* root, bool create_variable, ostream& info)
     {
         bool result = SUCCEED;
+		unordered_map<string, VARIABLE>::iterator it;
 
         CONST_OR_VARIABLE ans1;
         CONST_OR_VARIABLE ans2;
         switch (root->type) {
         case IS_CONSTANT:
+            ans = root->constant();
+			break;
         case IS_VARIABLE:
-            ans = root->val();
+			ans.Init(true, true);
+			it = variable_table.find(root->variable());
+			if (it == variable_table.end()) {
+				if (create_variable) {
+					ans.val = &variable_table[root->variable()];
+				} else {
+					info << "No such a variable " << root->variable() << '\n';
+					result = FAIL;
+				}
+			} else {
+				ans.val = &it->second;
+			}
             break;
         case IS_OPERATOR:
             switch (root->op()) {
             case ASSIGN:
-                result = CalcByTree(ans, root->child[0], information);
-                result = CalcByTree(ans2, root->child[0], information);
-                result = ans.Copy(ans2, information);
+                FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], true, info));
+                FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, info));
+                FAIL_THEN_RETURN(ans.Copy(ans2, info));
+                #if DEBUG
+                cerr << "ans = " << *(IntType*)ans.val->val << endl;
+                cerr << "ans2 = " << *(IntType*)ans2.val->val << endl;
+                #endif // DEBUG
+                break;
             case ADD:
-                result = CalcByTree(ans1, root->child[0], information);
+                FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, info));
                 #if DEBUG
                 cerr << "ans1 = " << *(IntType*)ans1.val->val << endl;
                 #endif // DEBUG
-                result = CalcByTree(ans2, root->child[1], information);
+                FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, info));
                 #if DEBUG
                 cerr << "ans2 = " << *(IntType*)ans2.val->val << endl;
                 cerr << endl;
@@ -366,27 +378,27 @@ struct PYMM{
                 #endif // DEBUG
                 break;
             case SUB:
-                result = CalcByTree(ans1, root->child[0], information);
-                result = CalcByTree(ans2, root->child[1], information);
+                FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, info));
+                FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, info));
                 ans = ans1 - ans2;
                 break;
             case MUL:
-                result = CalcByTree(ans1, root->child[0], information);
-                result = CalcByTree(ans2, root->child[1], information);
+                FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, info));
+                FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, info));
                 ans = ans1 * ans2;
                 break;
             case DIV:
-                result = CalcByTree(ans1, root->child[0], information);
-                result = CalcByTree(ans2, root->child[1], information);
+                FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, info));
+                FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, info));
                 ans = ans1 / ans2;
                 break;
             default:
-                ErrMsg(information, "No such an operator ", root->op());
+                ErrMsg(info, "No such an operator ", root->op());
                 break;
             }
             break;
         default:
-            ErrMsg(information, "No such an operator ", root->op());
+            ErrMsg(info, "No such an operator ", root->op());
             break;
         }
         ans1.del();
