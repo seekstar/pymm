@@ -13,7 +13,10 @@ int main()
     #if DEBUG
     //in = "1+2";
     //in = "1+6*9";
-    in = "(6+1)*9";
+    //in = "(6+1)*9";
+    in = "2 + (1 * 6 + (9+6) ) * 9";
+    //in = "a = 9\n";
+    //in += "a*=9";
     pymm.Input(in.c_str(), information);
     cout << information << endl;
     #else
