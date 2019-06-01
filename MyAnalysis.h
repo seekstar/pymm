@@ -8,6 +8,8 @@
 
 #include "MyVariable.h"
 #include "MyString.h"
+#include "MyError.h"
+#include "MyFlags.h"
 //#include "MyStringSTL.h"
 
 #define MAX_CHILD 3
@@ -237,6 +239,17 @@ struct OPERAND_OR_OPERATOR {
     };
 };
 
+enum ERROR_TYPE
+{
+    NO_ERROR,
+    NO_OPERAND_BEFORE,
+    UNEXPECTED_OPERAND,
+};
+
+bool Parsing_dfs(NODE*& operand, vector<StrExpr>::iterator& now, ostream& info);
+void Parsing_IS_CONSTANT(NODE*& operand, ERROR_TYPE& error_type, const vector<StrExpr>::iterator& now, bool& finish);
+void Parsing_IS_OPERATOR(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>::iterator& now,  stack<NODE*>& operator_sta, bool& finish, ostream& info);
+
 extern map<string, OPERATOR> operator_code;
 extern map<OPERATOR, int>priority;
 extern map<OPERATOR, int>numOfOperands;
@@ -244,6 +257,14 @@ extern map<OPERATOR, bool>associative;
 extern set<char>symbols;
 extern map<string, KEY_WORD> key_word_code;
 extern map<string, SYS_FUNC> sys_func_code;
+
+bool IsSymbol(char ch);
+bool IsBeginOfVarialbeOrFunc(char ch);
+bool IsPartOfVariableOrFunc(char ch);
+bool IsAnOperator(const string& sth);
+bool IsSysFunc(const string& sth);
+bool IsKeyWord(const string& sth);
+
 
 NODE* OperandBecomeLeftChild(OPERATOR op, NODE*& operand);
 void AddOperandToLastChild(NODE* op, NODE*& operand);
