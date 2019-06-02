@@ -28,12 +28,14 @@ struct PYMM{
                 return SUCCEED;
         }
 
-        AppendWithNoCarry(stored_input, input);
+        //AppendWithNoCarry(stored_input, input);
+        stored_input += input;
+        stored_input += '\n';
         UpdateBraces(braces, input);
         if (!braces.empty()) {
                 return SUCCEED;
         }
-        stored_input += '\n';
+        //stored_input += '\n';
         const char* str = stored_input.c_str();
 
         FAIL_THEN_RETURN(LexicalAnalysis(strExpr, str, info));

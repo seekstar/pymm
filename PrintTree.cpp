@@ -18,6 +18,7 @@ void FillNewLine(MyQueue<MyString>& lines, size_t index, const vector<size_t>& r
 }
 //str must have the trailing carry
 //return the lines that used
+//Do not fill extra line.
 size_t LoadStr(MyQueue<MyString>& lines, const char str[], const vector<size_t>& rec_branch) {
 	size_t i = 0, max_len = 0;
 	for (; *str; ++str) {
@@ -43,21 +44,41 @@ void PrintABranch(MyQueue<MyString>& lines, vector<size_t>& rec_branch) {
 	lines.front() += "-----";
 	rec_branch.push_back(lines.front().size() - 3);
 }
-void PrintBranches(ostream& res, NODE* root, int num_branch, MyQueue<MyString>& lines, vector<size_t>& rec_branch) {
+int NumOfBranches(const NODE* root) {
+	switch (root->type) {
+	case IS_OPERATOR:
+		return numOfOperands[root->op()];
+	case IS_STRUCTURE:
+		return structureBranches[root->structure()];
+	default:
+		assert(1);
+		return -1;
+	}
+}
+bool LastChildHasSibling(const NODE* root) {
+	return root ? (root->child[NumOfBranches(root)-1]->sibling != NULL) : false;
+}
+void PrintBranches(ostream& res, NODE* root, MyQueue<MyString>& lines, vector<size_t>& rec_branch) {
 	assert(root);
+	int num_branch = NumOfBranches(root);
 	PrintABranch(lines, rec_branch);
 	for (int i = 0; i < num_branch - 1; ++i) {
 		PrintTree(res, root->child[i], lines, rec_branch);
 		FillNewLine(lines, 0, rec_branch);
 		lines.front() += "--";
 	}
-	rec_branch.pop_back();
+	bool lastHasSibling = LastChildHasSibling(root);
+	if (!lastHasSibling)
+		rec_branch.pop_back();
 	PrintTree(res, root->child[num_branch-1], lines, rec_branch);
-	FillNewLine(lines, 0, rec_branch);
+	if (lastHasSibling)
+		rec_branch.pop_back();
+	//FillNewLine(lines, 0, rec_branch);
 }
 //Do not print the last '\n'
 void PrintTree(ostream& res, NODE* root, MyQueue<MyString>& lines, vector<size_t>& rec_branch) {
 	while (root) {
+		FillNewLine(lines, 0, rec_branch);
 		ostringstream out;
 		if (root->output) {
 			out << "(o)";
@@ -84,10 +105,8 @@ void PrintTree(ostream& res, NODE* root, MyQueue<MyString>& lines, vector<size_t
 			}
 			break;
 		case IS_OPERATOR:
-			PrintBranches(res, root, numOfOperands[root->op()], lines, rec_branch);
-			break;
 		case IS_STRUCTURE:
-			PrintBranches(res, root, structureBranches[root->structure()], lines, rec_branch);
+			PrintBranches(res, root, lines, rec_branch);
 			break;
 		default:
 			cerr << "Invalid node type code " << root->type << endl;

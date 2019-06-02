@@ -362,14 +362,18 @@ bool LexicalAnalysis(vector<StrExpr>& strExpr, const char* str, ostream& info) {
 //parsing a block
 bool Parsing(NODE*& root, vector<StrExpr>::iterator& now, ostream& info) {
     bool finish = false;    //The block is finished
-    FAIL_THEN_RETURN(Parsing_dfs(root, now, finish, info));
-    #if DEBUG
+    do {
+        FAIL_THEN_RETURN(Parsing_dfs(root, now, finish, info));
+    } while (!root && !finish && now->type != IS_NIL);
+
+    /*#if DEBUG
     PrintTree(cerr, root);
-    #endif
+    #endif*/
     NODE* operand = root;
-    while (!finish && operand) {
+    while (!finish && now->type != IS_NIL) {
         FAIL_THEN_RETURN(Parsing_dfs(operand->sibling, now, finish, info));
-        operand = operand->sibling;
+        if (operand->sibling)
+            operand = operand->sibling;
     }
     return SUCCEED;
 }

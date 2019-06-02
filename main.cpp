@@ -33,11 +33,14 @@ int main()
     pymm.Input(in.c_str(), info);
     cout << "-------------\n" << info.str();
     info.str("");*/
-
-    in = "if(0){a=1;}else{a=2;}\na";
+/*
+    //in = "if(0){a=1;}else{a=2;}\na";
+    in = "a = 0;\nif(a){b=2}else{b=1\nc = b*3 * (1+b);}c";
     pymm.Input(in.c_str(), info);
     //in = "a";
-    //pymm.Input(in.c_str(), info);
+    */
+    in = "if(1){\nb=2;\n}else{\nb=5;\n}";
+    pymm.Input(in.c_str(), info);
     cout << "-------------\n" << info.str();
 
     #else
