@@ -327,6 +327,9 @@ NODE* OperandBecomeLeftChild(OPERATOR op, NODE*& operand);
 void AddOperandToLastChild(NODE* op, NODE*& operand);
 void PopAllOperators(stack<NODE*>& operator_sta, NODE*& operand);
 
+
+bool UpdateBraces(stack<char>& braces, const char*& str);
+
 void PrintStrExpr(const vector<StrExpr> strExpr);
 
 #endif // MYANALYSIS_H_INCLUDED

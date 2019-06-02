@@ -667,6 +667,41 @@ bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_
 	return SUCCEED;
 }
 
+bool UpdateBraces(stack<char>& braces, const char*& str) {
+    for (; *str; ++str) {
+        switch (*str) {
+        case '(':
+            braces.push('(');
+            break;
+        case ')':
+            if (braces.top() == '(')
+                braces.pop();
+            else
+                return FAIL;
+            break;
+        case '[':
+            braces.push('[');
+            break;
+        case ']':
+            if (braces.top() == '[')
+                braces.pop();
+            else
+                return FAIL;
+            break;
+        case '{':
+            braces.push('{');
+            break;
+        case '}':
+            if (braces.top() == '{')
+                braces.pop();
+            else
+                return FAIL;
+            break;
+        }
+    }
+    return SUCCEED;
+}
+
 void PrintStrExpr(const vector<StrExpr> strExpr)
 {
     for (auto expr : strExpr) {

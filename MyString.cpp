@@ -41,3 +41,10 @@ bool IsEmptyString(const char* str)
 
     return '\0' == *str;
 }
+
+//Carry will be replaced by space
+void AppendWithNoCarry(string& str, const char* s) {
+    for (; *s; ++s) {
+        str += (*s == '\n' ? ' ' : *s);
+    }
+}
