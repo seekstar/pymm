@@ -7,6 +7,7 @@ map<OPERATOR, bool>associative;
 set<char>symbols;
 map<string, KEY_WORD> key_word_code;
 map<string, SYS_FUNC> sys_func_code;
+map<string, SEPARATOR> separator_code;
 
 void Init(void){
     operator_code["="] = ASSIGN;
@@ -93,11 +94,17 @@ void Init(void){
     symbols.insert('}');
     symbols.insert('?');
     symbols.insert(':');
+    symbols.insert(';');
 
     key_word_code["if"] = IF_KEY;
     key_word_code["while"] = WHILE_KEY;
     key_word_code["for"] = FOR_KEY;
     key_word_code["do"] = DO_KEY;
+
+	separator_code["{"] = LEFT_BRACE;
+	separator_code["}"] = RIGHT_BRACE;
+	separator_code[";"] = SEMICOLON;
+	separator_code["\n"] = ENTER;
 }
 
 bool IsSymbol(char ch){
@@ -118,8 +125,34 @@ bool IsSysFunc(const string& sth){
 bool IsKeyWord(const string& sth) {
 	return key_word_code.find(sth) != key_word_code.end();
 }
+bool IsSeparator(const string& sth) {
+	return separator_code.find(sth) != separator_code.end();
+}
 
-string NodeType2string(NodeType type)
+const char* NodeTypeName(NodeType type) {
+    switch (type) {
+    case IS_CONSTANT:
+        return "IS_CONSTANT";
+    case IS_VARIABLE:
+        return "IS_VARIABLE";
+    case IS_OPERATOR:
+        return "IS_OPERATOR";
+    case IS_KEY_WORD:
+        return "IS_KEY_WORD";
+    case IS_STRUCTURE:
+        return "IS_STRUCTURE";
+    case IS_SYS_FUNC:
+        return "IS_SYS_FUNC";
+    case IS_USER_FUNC:
+        return "IS_USER_FUNC";
+    case IS_SEPARATOR:
+        return"IS_SEPARATOR";
+    case IS_NIL:
+        return "IS_NIL";
+    }
+    return "Error!";
+}
+/*string NodeType2string(NodeType type)
 {
     string ans;
     switch (type) {
@@ -144,6 +177,9 @@ string NodeType2string(NodeType type)
     case IS_USER_FUNC:
         ans =  "IS_USER_FUNC";
         break;
+    case IS_SEPARATOR:
+        ans = "IS_SEPARATOR";
+        break;
     case IS_NIL:
         ans =  "IS_NIL";
         break;
@@ -152,7 +188,7 @@ string NodeType2string(NodeType type)
         break;
     }
     return ans;
-}
+}*/
 
 const char* OperatorName(OPERATOR op)
 {
@@ -205,6 +241,8 @@ const char* KeyWordName(KEY_WORD key_word)
     switch (key_word) {
     case IF_KEY:
         return "if";
+    case ELSE_KEY:
+        return "else";
     case WHILE_KEY:
         return "while";
     case FOR_KEY:
@@ -245,6 +283,20 @@ const char* SysFuncName(SYS_FUNC sys_func)
     return "ERROR";
 }
 
+const char* SeparatorName(SEPARATOR separator) {
+	switch (separator) {
+	case LEFT_BRACE:
+		return "{";
+	case RIGHT_BRACE:
+		return "}";
+	case SEMICOLON:
+		return ";";
+	case ENTER:
+		return "<CR>";
+	}
+	return "ERROR";
+}
+
 NODE* OperandBecomeLeftChild(OPERATOR op, NODE*& operand) {
     NODE* ans = new NODE(IS_OPERATOR);
     ans->op() = op;
@@ -273,13 +325,20 @@ bool LexicalAnalysis(vector<StrExpr>& strExpr, const char* str, ostream& info) {
     bool status = SUCCEED;
     for (; *str;) {
         sth.clear();
-        SkipSpace(str);
+		SkipSpaceExceptEnter(str);
+		if (*str == '\n') {
+			strExpr.push_back(StrExpr{IS_SEPARATOR, "\n"});
+			++str;
+			continue;
+		} else if ('\0' == *str) {
+			break;
+		}
 		//Is the beginning of a variable or function or key word.
         if(IsBeginOfVarialbeOrFunc(*str)){
             do{
                 sth.push_back(*str++);
             }while(IsPartOfVariableOrFunc(*str));
-            SkipSpace(str);
+            SkipSpaceExceptEnter(str);
             if('(' == *str){
                if (IsSysFunc(sth)) {
                     strExpr.push_back(StrExpr{IS_SYS_FUNC, sth});
@@ -298,12 +357,21 @@ bool LexicalAnalysis(vector<StrExpr>& strExpr, const char* str, ostream& info) {
             }while(IsAnOperator(sth));
             sth.pop_back();
             --str;
-            if (sth.empty()) {
-			info << "Unknown chracter " << *str << '\n';
-                status = FAIL;
-                break;
+            if (!sth.empty()) {
+            	strExpr.push_back(StrExpr{IS_OPERATOR, sth});
+			} else {
+				do {
+					sth.push_back(*str++);
+				} while (IsSeparator(sth));
+				sth.pop_back();
+				--str;
+				if (sth.empty()) {
+					info << "Unknown chracter " << *str << '\n';
+       	        	status = FAIL;
+                	break;
+				}
+				strExpr.push_back(StrExpr{IS_SEPARATOR, sth});
             }
-            strExpr.push_back(StrExpr{IS_OPERATOR, sth});
         }else if(IsBeginningOfConst(*str)){
             GetConst(sth, str);
             strExpr.push_back(StrExpr{IS_CONSTANT, sth});
@@ -318,25 +386,41 @@ bool LexicalAnalysis(vector<StrExpr>& strExpr, const char* str, ostream& info) {
     return status;
 }
 
+bool Parsing(NODE*& root, vector<StrExpr>::iterator& now, ostream& info) {
+    FAIL_THEN_RETURN(Parsing_dfs(root, now, info));
+    NODE* operand = root;
+    while (operand) {
+        FAIL_THEN_RETURN(Parsing_dfs(operand->sibling, now, info));
+        operand = operand->sibling;
+    }
+    return SUCCEED;
+}
 bool Parsing_dfs(NODE*& operand, vector<StrExpr>::iterator& now, ostream& info) {
     stack<NODE*>operator_sta;
+	bool need_output = false;
 
     ERROR_TYPE error_type = NO_ERROR;
 
-    bool finish = false;
+    //bool finish = false;
+	bool needReturn = false;
     operand = NULL;
-    for (; !finish && NO_ERROR == error_type && now->type != IS_NIL; ++now) {
+    for (; !needReturn && NO_ERROR == error_type && now->type != IS_NIL; ++now) {
         switch (now->type) {
         case IS_CONSTANT:
-            Parsing_IS_CONSTANT(operand, error_type, now, finish);
+            Parsing_IS_CONSTANT(operand, error_type, now);
             break;
         case IS_VARIABLE:
             operand = new NODE(IS_VARIABLE);
             operand->variable() = now->name;
             break;
         case IS_OPERATOR:
-            Parsing_IS_OPERATOR(operand, error_type, now, operator_sta, finish, info);
+            Parsing_IS_OPERATOR(operand, error_type, now, operator_sta, needReturn, info);
  			break;
+		case IS_KEY_WORD:
+			break;
+		case IS_SEPARATOR:
+			Parsing_IS_SEPARATOR(error_type, now->name, needReturn, need_output);  //finish
+			break;
 		default:
 		    ErrMsg(info, "No such a node type ", now->type);
 			break;
@@ -344,22 +428,37 @@ bool Parsing_dfs(NODE*& operand, vector<StrExpr>::iterator& now, ostream& info) 
     }
     PopAllOperators(operator_sta, operand);
 
-    switch (error_type) {
-    case NO_OPERAND_BEFORE:
-		info << "No operand before the operator " << now->name << '\n';
-        break;
-    case UNEXPECTED_OPERAND:
-		info << "Unexpected operand " << now->name << '\n';
-        break;
-    default:
-        //skip
-        break;
+    if (NO_ERROR != error_type) {
+        --now;
+        switch (error_type) {
+        case NO_OPERAND_BEFORE:
+            info << "No operand before the operator " << now->name << '\n';
+            break;
+        case UNEXPECTED_OPERAND:
+            info << "Unexpected operand " << now->name << '\n';
+            break;
+        case UNEXPECTED_LEFT_BRACE:
+            info << "Unexpected '{'\n";
+            break;
+        case UNEXPECTED_ELSE_KEY:
+            info << "Unexpected else key\n";
+            break;
+        case UNRECOGNIZED_KEY:
+            info << "Unrecognized key " << now->name << '\n';
+            break;
+        default:
+            //skip
+            break;
+        }
     }
 
+    if (operand && need_output) {
+        operand->output = true;
+    }
     return error_type == NO_ERROR ? SUCCEED : FAIL;
 }
 
-void Parsing_IS_CONSTANT(NODE*& operand, ERROR_TYPE& error_type, const vector<StrExpr>::iterator& now, bool& finish) {
+void Parsing_IS_CONSTANT(NODE*& operand, ERROR_TYPE& error_type, const vector<StrExpr>::iterator& now) {
 	if (operand != NULL) {
         error_type = UNEXPECTED_OPERAND;
 		return;
@@ -367,12 +466,9 @@ void Parsing_IS_CONSTANT(NODE*& operand, ERROR_TYPE& error_type, const vector<St
     operand = new NODE(IS_CONSTANT);
     operand->constant().val = new VARIABLE;
     GetConst(*operand->constant().val, now->name.c_str());
-    /*#if DEBUG
-    cerr << "operand: " << *(IntType*)operand->constant().val->val << endl;
-    #endif*/ // DEBUG
 }
 
-void Parsing_IS_OPERATOR(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>::iterator& now, stack<NODE*>& operator_sta, bool& finish, ostream& info) {
+bool Parsing_IS_OPERATOR(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>::iterator& now, stack<NODE*>& operator_sta, bool& needReturn, ostream& info) {
     OPERATOR op = NIL;
     NODE* tmp = NULL;
 	if (now->name == "-") {
@@ -384,19 +480,17 @@ void Parsing_IS_OPERATOR(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>
     } else {
         op = operator_code[now->name];
     }
-    /*#if DEBUG
-    cerr << "operator code = " << op << endl;
-    #endif*/
+
     switch (numOfOperands[op]) {
     case 0:
         switch (op) {
         case LEFT_PARENTHESIS:
-            Parsing_dfs(operand, ++now, info);
+            FAIL_THEN_RETURN(Parsing_dfs(operand, ++now, info));
             --now;  //because the for loop will increase it soon.
             break;
         case RIGHT_PARENTHESIS:
             PopAllOperators(operator_sta, operand);
-            finish = true;
+            needReturn = true;
             break;
         default:
             ErrMsg(info, "Unexpected operator code ", op);
@@ -418,7 +512,7 @@ void Parsing_IS_OPERATOR(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>
     case 2:
         if (NULL == operand) {
             error_type = NO_OPERAND_BEFORE;
-            finish = true;
+            needReturn = true;
             break;
         }
         while (!operator_sta.empty()) {
@@ -440,8 +534,69 @@ void Parsing_IS_OPERATOR(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>
     case 3:
         break;
     }
+    return SUCCEED;
 }
 
+bool Parsing_IS_KEY_WORD(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>::iterator& now, stack<NODE*>& operator_sta, ostream& info) {
+	operand->Init(IS_STRUCTURE);
+	KEY_WORD code = key_word_code[now->name];
+	switch (code) {
+	case IF_KEY:
+        operand->structure() = IF;
+		++now;	//skip '('
+		Parsing_dfs(operand->child[0], now, info);
+		if (now->name == "{")
+			++now;	//skip '{'
+		FAIL_THEN_RETURN(Parsing_dfs(operand->child[1], now, info));
+		if (now->type == IS_SEPARATOR && key_word_code[now->name] == ELSE_KEY) {
+			++now;	//skip else
+			if (now->name == "{")
+				++now;	//skip '{'
+			Parsing_dfs(operand->child[1], now, info);
+		}
+		break;
+	case ELSE_KEY:
+        error_type = UNEXPECTED_ELSE_KEY;
+        break;
+    default:
+        error_type = UNRECOGNIZED_KEY;
+        break;
+	}
+	return SUCCEED;
+}
+
+void Parsing_IS_SEPARATOR(ERROR_TYPE& error_type, const string& name, bool& needReturn, bool& need_output) {
+	switch (separator_code[name]) {
+	case LEFT_BRACE:
+		error_type = UNEXPECTED_LEFT_BRACE;
+		break;
+	case RIGHT_BRACE:
+		//finish = true;
+		needReturn = true;
+		break;
+	case SEMICOLON:
+		needReturn = true;
+		break;
+	case ENTER:
+		//finish = true;
+		needReturn = true;
+		need_output = true;
+		break;
+	}
+}
+
+bool CalcByTree(const NODE* root, unordered_map<string, VARIABLE>& variable_table, ostream& info) {
+    while (root) {
+        CONST_OR_VARIABLE ans;
+        FAIL_THEN_RETURN(CalcByTree(ans, root, false, variable_table, info));
+        if (root->output) {
+            info << ToString(*ans.val) << endl;
+        }
+        ans.del();
+        root = root->sibling;
+    }
+    return SUCCEED;
+}
 bool CalcByTree(CONST_OR_VARIABLE& ans, const NODE* root, bool create_variable, unordered_map<string, VARIABLE>& variable_table, ostream& info) {
     bool result = SUCCEED;
 	unordered_map<string, VARIABLE>::iterator it;
@@ -482,25 +637,11 @@ bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_
         FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], true, variable_table, info));
         FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
         FAIL_THEN_RETURN(ans.Copy(ans2, info));
-        #if DEBUG
-        cerr << "ans = " << *(IntType*)ans.val->val << endl;
-        cerr << "ans2 = " << *(IntType*)ans2.val->val << endl;
-        #endif // DEBUG
         break;
     case ADD:
         FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
-        #if DEBUG
-        cerr << "ans1 = " << *(IntType*)ans1.val->val << endl;
-        #endif // DEBUG
         FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
-        #if DEBUG
-        cerr << "ans2 = " << *(IntType*)ans2.val->val << endl;
-        cerr << endl;
-        #endif // DEBUG
         ans = ans1 + ans2;
-        #if DEBUG
-        cerr << *(IntType*)ans.val->val << endl;
-        #endif // DEBUG
         break;
     case SUB:
         FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
@@ -526,13 +667,10 @@ bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_
 	return SUCCEED;
 }
 
-#if DEBUG
 void PrintStrExpr(const vector<StrExpr> strExpr)
 {
     for (auto expr : strExpr) {
-        cout << NodeType2string(expr.type) << ' ' << expr.name << endl;
+        cout << NodeTypeName(expr.type) << ' ' << expr.name << endl;
     }
     cout << endl;
 }
-#endif
-

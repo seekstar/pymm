@@ -11,7 +11,6 @@
 #include "MyString.h"
 #include "MyError.h"
 #include "MyFlags.h"
-//#include "MyPyMinusMinus.h"
 //#include "MyStringSTL.h"
 
 #define MAX_CHILD 3
@@ -29,6 +28,7 @@ enum NodeType {
     IS_STRUCTURE,
     IS_SYS_FUNC,
     IS_USER_FUNC,
+	IS_SEPARATOR,
     IS_NIL
 };
 
@@ -62,6 +62,7 @@ const char* OperatorName(OPERATOR op);
 
 enum KEY_WORD {
     IF_KEY,
+	ELSE_KEY,
     WHILE_KEY,
     FOR_KEY,
     DO_KEY
@@ -87,6 +88,15 @@ enum SYS_FUNC {
 
 const char* SysFuncName(SYS_FUNC sys_func);
 
+enum SEPARATOR {
+	LEFT_BRACE,
+	RIGHT_BRACE,
+	SEMICOLON,
+	ENTER
+};
+
+const char* SeparatorName(SEPARATOR separator);
+
 struct StrExpr {
     NodeType type;
     string name;
@@ -98,6 +108,7 @@ struct NODE {
 
     NODE* sibling;
     NODE* child[MAX_CHILD];
+	bool output;
 
     NODE(NodeType _type) {
         Init(_type);
@@ -128,12 +139,19 @@ struct NODE {
         case IS_USER_FUNC:
             delete (string*)sth;
             break;
+		case IS_SEPARATOR:
+            assert(1);
+			delete (SEPARATOR*)sth;
+			break;
         case IS_NIL:
             break;  //skip
         }
     }
     void Init(NodeType _type) {
         type = _type;
+		sibling = NULL;
+		memset(child, 0, sizeof(child));
+		output = false;
         switch (type) {
         case IS_CONSTANT:
             sth = new CONST_OR_VARIABLE(false, true);
@@ -156,6 +174,10 @@ struct NODE {
         case IS_USER_FUNC:
             sth = new string;
             break;
+		case IS_SEPARATOR:
+            assert(1);
+			sth = new SEPARATOR;
+			break;
         default:
             static char tmp[20];
             MyItoa(tmp, type);
@@ -202,6 +224,17 @@ struct NODE {
     string& user_func() {
         return *(string*)sth;
     }
+	const string& user_func() const {
+		return *(const string*)sth;
+	}
+	SEPARATOR& separator() {
+        assert(1);
+		return *(SEPARATOR*)sth;
+	}
+	const SEPARATOR& separator() const {
+        assert(1);
+		return *(const SEPARATOR*)sth;
+	}
 
     void PrintNode(ostream& out) {
         switch (type) {
@@ -226,6 +259,10 @@ struct NODE {
         case IS_USER_FUNC:
             out << *(string*)sth;
             break;
+		case IS_SEPARATOR:
+            assert(1);
+			out << SeparatorName(*(SEPARATOR*)sth);
+			break;
         case IS_NIL:
             out << "/\\";
             break;
@@ -248,17 +285,22 @@ enum ERROR_TYPE
     NO_ERROR,
     NO_OPERAND_BEFORE,
     UNEXPECTED_OPERAND,
+	UNEXPECTED_LEFT_BRACE,
+	UNEXPECTED_ELSE_KEY,
+	UNRECOGNIZED_KEY
 };
 
 bool LexicalAnalysis(vector<StrExpr>& strExpr, const char* str, ostream& info);
 
+bool Parsing(NODE*& root, vector<StrExpr>::iterator& now, ostream& info);
 bool Parsing_dfs(NODE*& operand, vector<StrExpr>::iterator& now, ostream& info);
-void Parsing_IS_CONSTANT(NODE*& operand, ERROR_TYPE& error_type, const vector<StrExpr>::iterator& now, bool& finish);
-void Parsing_IS_OPERATOR(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>::iterator& now,  stack<NODE*>& operator_sta, bool& finish, ostream& info);
+void Parsing_IS_CONSTANT(NODE*& operand, ERROR_TYPE& error_type, const vector<StrExpr>::iterator& now);
+bool Parsing_IS_OPERATOR(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>::iterator& now,  stack<NODE*>& operator_sta, bool& finish, ostream& info);
+void Parsing_IS_SEPARATOR(ERROR_TYPE& error_type, const string& name, bool& needReturn, bool& need_output);
 
+bool CalcByTree(const NODE* root, unordered_map<string, VARIABLE>& variable_table, ostream& info);
 bool CalcByTree(CONST_OR_VARIABLE& ans, const NODE* root, bool create_variable, unordered_map<string, VARIABLE>& variable_table, ostream& info);
 bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_map<string, VARIABLE>& variable_table, ostream& info);
-
 
 
 extern map<string, OPERATOR> operator_code;
@@ -268,6 +310,7 @@ extern map<OPERATOR, bool>associative;
 extern set<char>symbols;
 extern map<string, KEY_WORD> key_word_code;
 extern map<string, SYS_FUNC> sys_func_code;
+extern map<string, SEPARATOR> separator_code;
 
 void Init(void);
 
@@ -284,9 +327,7 @@ NODE* OperandBecomeLeftChild(OPERATOR op, NODE*& operand);
 void AddOperandToLastChild(NODE* op, NODE*& operand);
 void PopAllOperators(stack<NODE*>& operator_sta, NODE*& operand);
 
-#if DEBUG
 void PrintStrExpr(const vector<StrExpr> strExpr);
-#endif // DEBUG
 
 #endif // MYANALYSIS_H_INCLUDED
 

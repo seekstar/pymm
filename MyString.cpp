@@ -6,6 +6,11 @@ void SkipSpace(const char*& str)
         ++str;
 }
 
+void SkipSpaceExceptEnter(const char*& str) {
+	while (*str != '\0' && *str != '\n' && isspace(*str))
+		++str;
+}
+
 //MyString.txt
 int MyAtoi(const char* str, int len)
 {

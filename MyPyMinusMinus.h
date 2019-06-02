@@ -17,11 +17,10 @@ struct PYMM{
     PYMM(){
         Init();
     }
-    
+
     bool Input(const char* str, ostream& info){
         vector<StrExpr> strExpr;
         NODE* root = NULL;
-        CONST_OR_VARIABLE ans;
 
         if(IsEmptyString(str))
             return SUCCEED;
@@ -33,16 +32,13 @@ struct PYMM{
         #endif // DEBUG
 
         auto now = strExpr.begin();
-        FAIL_THEN_RETURN(Parsing_dfs(root, now, info));
+        FAIL_THEN_RETURN(Parsing(root, now, info));
 
 #if DEBUG
         PrintTree(cout, root);
 #endif
 
-        FAIL_THEN_RETURN(CalcByTree(ans, root, false, variable_table, info));
-
-        info << ToString(*ans.val);
-		ans.del();
+        FAIL_THEN_RETURN(CalcByTree(root, variable_table, info));
 
         return SUCCEED;
     }

@@ -4,6 +4,7 @@
 #include <ctype.h>
 
 void SkipSpace(const char*& str);
+void SkipSpaceExceptEnter(const char*& str);
 
 int MyAtoi(const char* str, int len);
 void MyItoa(char* str, int x);
