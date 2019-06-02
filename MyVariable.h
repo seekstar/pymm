@@ -28,6 +28,20 @@ struct VARIABLE{
     ~VARIABLE() {
         ;
     }
+    explicit operator bool() {
+        switch (type) {
+        case IS_INTEGER:
+            return (bool)*(IntType*)val;
+        case IS_DOUBLE:
+            return abs(*(double*)val) >= 1e-6;
+        case IS_MATRIX:
+            assert(1);
+            return (bool)*(MATRIX*)val;
+        default:
+            assert(1);
+            return false;
+        }
+    }
     void del() {
         if (!val) return;
         switch (type) {
@@ -497,6 +511,10 @@ struct CONST_OR_VARIABLE{
     {
         del();
     }*/
+
+    explicit operator bool() {
+        return (bool)*val;
+    }
     void del() {
         if (!left_value && val) {
             val->del();

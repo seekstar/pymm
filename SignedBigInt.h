@@ -40,6 +40,9 @@ struct SignedBigInt
         }
         return ans;
 	}
+	explicit operator bool() const {
+		return absVal.s.size();
+	}
 
 	bool operator == (const SignedBigInt& b) const
 	{

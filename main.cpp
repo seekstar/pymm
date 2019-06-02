@@ -22,8 +22,8 @@ int main()
     //in = "a=2\nb=4\na*b\n";
 
     //in += "a*=9";
-    //pymm.Input(in.c_str(), info);
 
+/*
     in = "a=(1+\n";
     pymm.Input(in.c_str(), info);
     cout << "-------------\n" << info.str();
@@ -32,7 +32,13 @@ int main()
     in = "2)\n";
     pymm.Input(in.c_str(), info);
     cout << "-------------\n" << info.str();
-    info.str("");
+    info.str("");*/
+
+    in = "if(0){a=1;}else{a=2;}\na";
+    pymm.Input(in.c_str(), info);
+    //in = "a";
+    //pymm.Input(in.c_str(), info);
+    cout << "-------------\n" << info.str();
 
     #else
     while (getline(cin, in)) {

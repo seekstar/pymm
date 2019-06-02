@@ -289,19 +289,21 @@ enum ERROR_TYPE
 	UNEXPECTED_ELSE_KEY,
 	UNRECOGNIZED_KEY
 };
+void PrintErrorMsg(ERROR_TYPE type, const string& name, ostream& info);
 
 bool LexicalAnalysis(vector<StrExpr>& strExpr, const char* str, ostream& info);
 
 bool Parsing(NODE*& root, vector<StrExpr>::iterator& now, ostream& info);
-bool Parsing_dfs(NODE*& operand, vector<StrExpr>::iterator& now, ostream& info);
+bool Parsing_dfs(NODE*& operand, vector<StrExpr>::iterator& now, bool& finish, ostream& info);
 void Parsing_IS_CONSTANT(NODE*& operand, ERROR_TYPE& error_type, const vector<StrExpr>::iterator& now);
 bool Parsing_IS_OPERATOR(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>::iterator& now,  stack<NODE*>& operator_sta, bool& finish, ostream& info);
-void Parsing_IS_SEPARATOR(ERROR_TYPE& error_type, const string& name, bool& needReturn, bool& need_output);
+bool Parsing_IS_KEY_WORD(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>::iterator& now, stack<NODE*>& operator_sta, ostream& info);
+void Parsing_IS_SEPARATOR(ERROR_TYPE& error_type, const string& name, bool& needReturn, bool& finish, bool& need_output);
 
 bool CalcByTree(const NODE* root, unordered_map<string, VARIABLE>& variable_table, ostream& info);
 bool CalcByTree(CONST_OR_VARIABLE& ans, const NODE* root, bool create_variable, unordered_map<string, VARIABLE>& variable_table, ostream& info);
 bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_map<string, VARIABLE>& variable_table, ostream& info);
-
+bool CalcByTree_IS_STRUCTURE(const NODE* root, unordered_map<string, VARIABLE>& variable_table, ostream& info);
 
 extern map<string, OPERATOR> operator_code;
 extern map<OPERATOR, int>priority;
@@ -311,6 +313,7 @@ extern set<char>symbols;
 extern map<string, KEY_WORD> key_word_code;
 extern map<string, SYS_FUNC> sys_func_code;
 extern map<string, SEPARATOR> separator_code;
+extern map<STRUCTURE, int> structureBranches;
 
 void Init(void);
 

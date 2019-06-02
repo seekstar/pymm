@@ -637,11 +637,11 @@
 1558993438 source:g:\git\files\pymm\unsignedbigint.cpp
 	"UnsignedBigInt.h"
 
-1559469923 source:/home/searchstar/git/pymm/main.cpp
+1559476329 source:/home/searchstar/git/pymm/main.cpp
 	<iostream>
 	"MyPyMinusMinus.h"
 
-1559469886 /home/searchstar/git/pymm/MyPyMinusMinus.h
+1559480280 /home/searchstar/git/pymm/MyPyMinusMinus.h
 	<vector>
 	<unordered_map>
 	"MyAnalysis.h"
@@ -651,7 +651,7 @@
 	<ctype.h>
 	<string>
 
-1559468173 /home/searchstar/git/pymm/MyAnalysis.h
+1559479831 /home/searchstar/git/pymm/MyAnalysis.h
 	<ctype.h>
 	<map>
 	<set>
@@ -662,19 +662,19 @@
 	"MyError.h"
 	"MyFlags.h"
 
-1559392256 /home/searchstar/git/pymm/MyVariable.h
+1559475918 /home/searchstar/git/pymm/MyVariable.h
 	<assert.h>
 	"MyFlags.h"
 	"MyInteger.h"
 	"MyMatrix.h"
 
-1559469937 /home/searchstar/git/pymm/MyFlags.h
+1559480249 /home/searchstar/git/pymm/MyFlags.h
 
 1559034154 /home/searchstar/git/pymm/MyInteger.h
 	"SignedBigInt.h"
 	"MyFlags.h"
 
-1558950678 /home/searchstar/git/pymm/SignedBigInt.h
+1559475802 /home/searchstar/git/pymm/SignedBigInt.h
 	<cmath>
 	"UnsignedBigInt.h"
 
@@ -706,8 +706,9 @@
 
 1559036854 /home/searchstar/git/pymm/MyArithmetic.h
 
-1559469565 source:/home/searchstar/git/pymm/MyAnalysis.cpp
+1559480236 source:/home/searchstar/git/pymm/MyAnalysis.cpp
 	"MyAnalysis.h"
+	"PrintTree.h"
 
 1559391342 source:/home/searchstar/git/pymm/MyError.cpp
 	"MyError.h"
@@ -727,7 +728,7 @@
 1558755208 source:/home/searchstar/git/pymm/UnsignedBigInt.cpp
 	"UnsignedBigInt.h"
 
-1559459365 source:/home/searchstar/git/pymm/PrintTree.cpp
+1559474802 source:/home/searchstar/git/pymm/PrintTree.cpp
 	"PrintTree.h"
 
 1559141311 /home/searchstar/git/pymm/MyStringSTL.h

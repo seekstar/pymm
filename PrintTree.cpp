@@ -39,39 +39,21 @@ size_t LoadStr(MyQueue<MyString>& lines, const char str[], const vector<size_t>&
 	}
 	return i;
 }
-void PrintBranch(MyQueue<MyString>& lines, vector<size_t>& rec_branch) {
+void PrintABranch(MyQueue<MyString>& lines, vector<size_t>& rec_branch) {
 	lines.front() += "-----";
 	rec_branch.push_back(lines.front().size() - 3);
 }
-void PrintOperatorBranch(ostream& res, NODE* root, MyQueue<MyString>& lines, vector<size_t>& rec_branch) {
+void PrintBranches(ostream& res, NODE* root, int num_branch, MyQueue<MyString>& lines, vector<size_t>& rec_branch) {
 	assert(root);
-	PrintBranch(lines, rec_branch);
-	int num = numOfOperands[root->op()];
-	for (int i = 0; i < num - 1; ++i) {
+	PrintABranch(lines, rec_branch);
+	for (int i = 0; i < num_branch - 1; ++i) {
 		PrintTree(res, root->child[i], lines, rec_branch);
 		FillNewLine(lines, 0, rec_branch);
 		lines.front() += "--";
 	}
 	rec_branch.pop_back();
-	PrintTree(res, root->child[num-1], lines, rec_branch);
+	PrintTree(res, root->child[num_branch-1], lines, rec_branch);
 	FillNewLine(lines, 0, rec_branch);
-}
-void PrintStructureBranch(ostream& res, NODE* root, MyQueue<MyString>& lines, vector<size_t>& rec_branch) {
-	assert(root);
-	PrintBranch(lines, rec_branch);
-	switch (root->structure()) {
-	case FOR:
-		break;
-	case IF:
-		PrintTree(res, root->child[0], lines, rec_branch);
-		FillNewLine(lines, 0, rec_branch);
-		lines.front() += "--";
-		PrintTree(res, root->child[1], lines, rec_branch);
-	case WHILE:
-		break;
-	case DO_WHILE:
-		break;
-	}
 }
 //Do not print the last '\n'
 void PrintTree(ostream& res, NODE* root, MyQueue<MyString>& lines, vector<size_t>& rec_branch) {
@@ -102,10 +84,10 @@ void PrintTree(ostream& res, NODE* root, MyQueue<MyString>& lines, vector<size_t
 			}
 			break;
 		case IS_OPERATOR:
-			PrintOperatorBranch(res, root, lines, rec_branch);
+			PrintBranches(res, root, numOfOperands[root->op()], lines, rec_branch);
 			break;
 		case IS_STRUCTURE:
-			PrintStructureBranch(res, root, lines, rec_branch);
+			PrintBranches(res, root, structureBranches[root->structure()], lines, rec_branch);
 			break;
 		default:
 			cerr << "Invalid node type code " << root->type << endl;
