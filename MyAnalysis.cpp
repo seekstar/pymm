@@ -167,37 +167,37 @@ const char* OperatorName(OPERATOR op)
     case NIL:
         return "/\\";
     case ASSIGN:
-        return "=";
+        return "(=)";
     case ADD:
-        return "+";
+        return "(+)";
     case ADD_EQ:
-        return "+=";
+        return "(+=)";
     case SUB:
-        return "-";
+        return "(-)";
     case SUB_EQ:
-        return "-=";
+        return "(-=)";
     case MUL:
-        return "*";
+        return "(*)";
     case MUL_EQ:
-        return "*=";
+        return "(*=)";
     case DIV:
-        return "/";
+        return "(/)";
     case DIV_EQ:
-        return "/=";
+        return "(/=)";
     case MODULUS:
-        return "%";
+        return "(%)";
     case MODULUS_EQ:
-        return "%=";
+        return "(%=)";
     case MINUS:
-        return "-";
+        return "(-)";
     case LESS:
-        return "<";
+        return "(<)";
     case LESS_EQ:
-        return "<=";
+        return "(<=)";
     case GREATER:
-        return ">";
+        return "(>)";
     case GREATER_EQ:
-        return ">=";
+        return "(>=)";
     case LEFT_PARENTHESIS:
         return "(";
     case RIGHT_PARENTHESIS:
@@ -378,6 +378,7 @@ bool Parsing(NODE*& root, vector<StrExpr>::iterator& now, ostream& info) {
     return SUCCEED;
 }
 //parsing a sentence
+//After return, "now" will point to the next sentence
 bool Parsing_dfs(NODE*& operand, vector<StrExpr>::iterator& now, bool& finish, ostream& info) {
     stack<NODE*>operator_sta;
 	bool need_output = false;
@@ -544,10 +545,22 @@ bool Parsing_IS_KEY_WORD(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>
             ++now;  //skip '{'
 			Parsing(operand->child[2], now, info);
 		}
+		//Now "now" points the next sentence.
 		--now;  //Because the for loop will increase it soon
 		break;
 	case ELSE_KEY:
         error_type = UNEXPECTED_ELSE_KEY;
+        break;
+    case WHILE_KEY:
+        operand->structure() = WHILE;
+        ++now;
+        ++now;  //skip '('
+        Parsing_dfs(operand->child[0], now, finish, info);
+        if (now->name == "{")
+            ++now;
+        FAIL_THEN_RETURN(Parsing(operand->child[1], now, info));
+        //Now "now" points the next sentence.
+        --now;  //Because the for loop will increase it soon
         break;
     default:
         error_type = UNRECOGNIZED_KEY;
