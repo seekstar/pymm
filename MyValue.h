@@ -2,6 +2,7 @@
 #define MYVALUE_H_INCLUDED
 
 #include <cstdio>
+#include <cmath>
 
 #include "MyInteger.h"
 #include "MyMatrix.h"
@@ -9,7 +10,8 @@
 //fundamental type
 enum VAL_TYPE{
     IS_INTEGER,
-    IS_DOUBLE
+    IS_DOUBLE,
+    IS_BOOL
 };
 
 struct VALUE {
@@ -23,24 +25,10 @@ struct VALUE {
 		type = v.type;
 		val = v.val;
 	}
-	/*VALUE(VAL_TYPE t) {
-		Init(t);
-	}*/
 	~VALUE() {
 		//del();
 	}
 
-	/*void Init(VAL_TYPE t) {
-		type = t;
-		switch (type) {
-		case IS_INTEGER:
-			val = new IntType;
-			break;
-		case IS_DOBLE:
-			val = new double;
-			break;
-		}
-	}*/
 	void del() {
 		if (NULL == val) return;
 		switch (type) {
@@ -49,6 +37,9 @@ struct VALUE {
 			break;
 		case IS_DOUBLE:
 			delete (double*)val;
+			break;
+		case IS_BOOL:
+			delete (bool*)val;
 			break;
 		}
 		val = NULL;
@@ -59,6 +50,8 @@ struct VALUE {
 			return (bool)*(IntType*)val;
 		case IS_DOUBLE:
 			return abs(*(double*)val) >= 1e-6;
+		case IS_BOOL:
+			return *(bool*)val;
 		}
 		assert(1);
 		return false;
@@ -69,6 +62,8 @@ struct VALUE {
 			return (size_t)(int)*(IntType*)val;
 		case IS_DOUBLE:
 			return (int)*(double*)val;
+		case IS_BOOL:
+			return (int)*(bool*)val;
 		}
 		assert(1);
 		return -1;
@@ -83,6 +78,10 @@ struct VALUE {
 		case IS_DOUBLE:
 			val = new double;
 			*(double*)val = *(double*)rhs.val;
+			break;
+		case IS_BOOL:
+			val = new bool;
+			*(bool*)val = *(bool*)rhs.val;
 			break;
 		}
 		return *this;
@@ -102,6 +101,11 @@ struct VALUE {
                 ans.val = new double;
                 *(double*)ans.val = (double)(*(IntType*)val) + *(double*)rhs.val;
                 break;
+			case IS_BOOL:
+				ans.type = IS_INTEGER;
+				ans.val = new IntType;
+				*(IntType*)ans.val = *(IntType*)val + (IntType)(int)*(bool*)rhs.val;
+				break;
             }
             break;
         case IS_DOUBLE:
@@ -114,7 +118,15 @@ struct VALUE {
                 ans.val = new double;
                 *(double*)ans.val = *(double*)val + *(double*)rhs.val;
                 break;
+			case IS_BOOL:
+				ans.type = IS_DOUBLE;
+				ans.val = new double;
+				*(double*)ans.val = *(double*)val + (double)*(bool*)rhs.val;
+				break;
             }
+			break;
+		case IS_BOOL:
+			ans = rhs + *this;
 			break;
         }
 		return ans;
@@ -134,6 +146,11 @@ struct VALUE {
                 ans.val = new double;
                 *(double*)ans.val = (double)(*(IntType*)val) - *(double*)rhs.val;
                 break;
+			case IS_BOOL:
+				ans.type = IS_INTEGER;
+				ans.val = new IntType;
+				*(IntType*)ans.val = *(IntType*)val - (IntType)(int)*(bool*)rhs.val;
+				break;
             }
             break;
         case IS_DOUBLE:
@@ -146,7 +163,13 @@ struct VALUE {
                 ans.val = new double;
                 *(double*)ans.val = *(double*)val - *(double*)rhs.val;
                 break;
+			case IS_BOOL:
+				assert(1);
+				break;
             }
+			break;
+		case IS_BOOL:
+			assert(1);
 			break;
         }
 		return ans;
@@ -166,6 +189,9 @@ struct VALUE {
                 ans.val = new double;
                 *(double*)ans.val = (double)(*(IntType*)val) * *(double*)rhs.val;
                 break;
+			case IS_BOOL:
+				assert(1);
+				break;
             }
             break;
         case IS_DOUBLE:
@@ -178,7 +204,13 @@ struct VALUE {
                 ans.val = new double;
                 *(double*)ans.val = *(double*)val * *(double*)rhs.val;
                 break;
+			case IS_BOOL:
+				assert(1);
+				break;
             }
+			break;
+		case IS_BOOL:
+			assert(1);
 			break;
         }
 		return ans;
@@ -198,6 +230,9 @@ struct VALUE {
                 ans.val = new double;
                 *(double*)ans.val = (double)(*(IntType*)val) / *(double*)rhs.val;
                 break;
+			case IS_BOOL:
+				assert(1);
+				break;
             }
             break;
         case IS_DOUBLE:
@@ -210,7 +245,54 @@ struct VALUE {
                 ans.val = new double;
                 *(double*)ans.val = *(double*)val / *(double*)rhs.val;
                 break;
+			case IS_BOOL:
+				assert(1);
+				break;
             }
+			break;
+		case IS_BOOL:
+			assert(1);
+			break;
+        }
+		return ans;
+	}
+	VALUE operator % (const VALUE& rhs) const {
+		static VALUE ans;
+		switch (type) {
+        case IS_INTEGER:
+            switch (rhs.type) {
+            case IS_INTEGER:
+                ans.type = IS_INTEGER;
+                ans.val = new IntType;
+                *(IntType*)ans.val = *(IntType*)val % *(IntType*)rhs.val;
+                break;
+            case IS_DOUBLE:
+                ans.type = IS_DOUBLE;
+                ans.val = new double;
+                *(double*)ans.val = fmod((double)(*(IntType*)val), *(double*)rhs.val);
+                break;
+			case IS_BOOL:
+				assert(1);
+				break;
+            }
+            break;
+        case IS_DOUBLE:
+            switch (rhs.type) {
+            case IS_INTEGER:
+                ans = rhs % *this;
+                break;
+            case IS_DOUBLE:
+                ans.type = IS_DOUBLE;
+                ans.val = new double;
+                *(double*)ans.val = fmod(*(double*)val, *(double*)rhs.val);
+                break;
+			case IS_BOOL:
+				assert(1);
+				break;
+            }
+			break;
+		case IS_BOOL:
+			assert(1);
 			break;
         }
 		return ans;
@@ -219,7 +301,7 @@ struct VALUE {
 	VALUE& operator += (const VALUE& rhs) {
 		switch (type) {
 		case IS_INTEGER:
-			switch (type) {
+			switch (rhs.type) {
 			case IS_INTEGER:
 				*(IntType*)val += *(IntType*)rhs.val;
 				break;
@@ -229,17 +311,26 @@ struct VALUE {
 				val = new double;
 				*(double*)val += *(double*)rhs.val;
 				break;
+			case IS_BOOL:
+				assert(1);
+				break;
 			}
 			break;
 		case IS_DOUBLE:
-			switch (type) {
+			switch (rhs.type) {
 			case IS_INTEGER:
 				*(double*)val += (double)*(IntType*)rhs.val;
 				break;
 			case IS_DOUBLE:
 				*(double*)val += *(double*)rhs.val;
 				break;
+			case IS_BOOL:
+				assert(1);
+				break;
 			}
+			break;
+		case IS_BOOL:
+			assert(1);
 			break;
 		}
 		return *this;
@@ -247,7 +338,7 @@ struct VALUE {
 	VALUE& operator -= (const VALUE& rhs) {
 		switch (type) {
 		case IS_INTEGER:
-			switch (type) {
+			switch (rhs.type) {
 			case IS_INTEGER:
 				*(IntType*)val -= *(IntType*)rhs.val;
 				break;
@@ -257,17 +348,26 @@ struct VALUE {
 				val = new double;
 				*(double*)val -= *(double*)rhs.val;
 				break;
+			case IS_BOOL:
+				assert(1);
+				break;
 			}
 			break;
 		case IS_DOUBLE:
-			switch (type) {
+			switch (rhs.type) {
 			case IS_INTEGER:
 				*(double*)val -= (double)*(IntType*)rhs.val;
 				break;
 			case IS_DOUBLE:
 				*(double*)val -= *(double*)rhs.val;
 				break;
+			case IS_BOOL:
+				assert(1);
+				break;
 			}
+			break;
+		case IS_BOOL:
+			assert(1);
 			break;
 		}
 		return *this;
@@ -275,7 +375,7 @@ struct VALUE {
 	VALUE& operator *= (const VALUE& rhs) {
 		switch (type) {
 		case IS_INTEGER:
-			switch (type) {
+			switch (rhs.type) {
 			case IS_INTEGER:
 				*(IntType*)val *= *(IntType*)rhs.val;
 				break;
@@ -285,17 +385,26 @@ struct VALUE {
 				val = new double;
 				*(double*)val *= *(double*)rhs.val;
 				break;
+			case IS_BOOL:
+				assert(1);
+				break;
 			}
 			break;
 		case IS_DOUBLE:
-			switch (type) {
+			switch (rhs.type) {
 			case IS_INTEGER:
 				*(double*)val *= (double)*(IntType*)rhs.val;
 				break;
 			case IS_DOUBLE:
 				*(double*)val *= *(double*)rhs.val;
 				break;
+			case IS_BOOL:
+				assert(1);
+				break;
 			}
+			break;
+		case IS_BOOL:
+			assert(1);
 			break;
 		}
 		return *this;
@@ -303,7 +412,7 @@ struct VALUE {
 	VALUE& operator /= (const VALUE& rhs) {
 		switch (type) {
 		case IS_INTEGER:
-			switch (type) {
+			switch (rhs.type) {
 			case IS_INTEGER:
 				*(IntType*)val /= *(IntType*)rhs.val;
 				break;
@@ -313,20 +422,215 @@ struct VALUE {
 				val = new double;
 				*(double*)val /= *(double*)rhs.val;
 				break;
+			case IS_BOOL:
+				assert(1);
+				break;
 			}
 			break;
 		case IS_DOUBLE:
-			switch (type) {
+			switch (rhs.type) {
 			case IS_INTEGER:
 				*(double*)val /= (double)*(IntType*)rhs.val;
 				break;
 			case IS_DOUBLE:
 				*(double*)val /= *(double*)rhs.val;
 				break;
+			case IS_BOOL:
+				assert(1);
+				break;
 			}
+			break;
+		case IS_BOOL:
+			assert(1);
 			break;
 		}
 		return *this;
+	}
+	VALUE& operator %= (const VALUE& rhs) {
+		switch (type) {
+		case IS_INTEGER:
+			switch (rhs.type) {
+			case IS_INTEGER:
+				*(IntType*)val %= *(IntType*)rhs.val;
+				break;
+			case IS_DOUBLE:
+				delete (IntType*)val;
+				type = IS_DOUBLE;
+				val = new double;
+				*(double*)val = fmod(*(double*)val, *(double*)rhs.val);
+				break;
+			case IS_BOOL:
+				assert(1);
+				break;
+			}
+			break;
+		case IS_DOUBLE:
+			switch (rhs.type) {
+			case IS_INTEGER:
+				*(double*)val = fmod(*(double*)val, (double)*(IntType*)rhs.val);
+				break;
+			case IS_DOUBLE:
+				*(double*)val = fmod(*(double*)val, *(double*)rhs.val);
+				break;
+			case IS_BOOL:
+				assert(1);
+				break;
+			}
+			break;
+		case IS_BOOL:
+			assert(1);
+			break;
+		}
+		return *this;
+	}
+
+	VALUE operator < (const VALUE& rhs) {
+		static VALUE ans;
+		ans.type = IS_BOOL;
+		ans.val = new bool;
+		switch (type) {
+		case IS_INTEGER:
+			switch (rhs.type) {
+			case IS_INTEGER:
+				*(bool*)ans.val = *(IntType*)val < *(IntType*)rhs.val;
+				break;
+			case IS_DOUBLE:
+				*(bool*)ans.val = (double)*(IntType*)val < *(double*)rhs.val;
+				break;
+			case IS_BOOL:
+				assert(1);
+				break;
+			}
+			break;
+		case IS_DOUBLE:
+			switch (rhs.type) {
+			case IS_INTEGER:
+				*(bool*)ans.val = *(double*)val < (double)*(IntType*)rhs.val;
+				break;
+			case IS_DOUBLE:
+				*(bool*)ans.val = *(double*)val < *(double*)rhs.val;
+				break;
+			case IS_BOOL:
+				assert(1);
+				break;
+			}
+			break;
+		case IS_BOOL:
+			assert(1);
+			break;
+		}
+		return ans;
+	}
+	VALUE operator <= (const VALUE& rhs) {
+		static VALUE ans;
+		ans.type = IS_BOOL;
+		ans.val = new bool;
+		switch (type) {
+		case IS_INTEGER:
+			switch (rhs.type) {
+			case IS_INTEGER:
+				*(bool*)ans.val = *(IntType*)val <= *(IntType*)rhs.val;
+				break;
+			case IS_DOUBLE:
+				*(bool*)ans.val = (double)*(IntType*)val <= *(double*)rhs.val;
+				break;
+			case IS_BOOL:
+				assert(1);
+				break;
+			}
+			break;
+		case IS_DOUBLE:
+			switch (rhs.type) {
+			case IS_INTEGER:
+				*(bool*)ans.val = *(double*)val <= (double)*(IntType*)rhs.val;
+				break;
+			case IS_DOUBLE:
+				*(bool*)ans.val = *(double*)val <= *(double*)rhs.val;
+				break;
+			case IS_BOOL:
+				assert(1);
+				break;
+			}
+			break;
+		case IS_BOOL:
+			assert(1);
+			break;
+		}
+		return ans;
+	}
+	VALUE operator > (const VALUE& rhs) {
+		static VALUE ans;
+		ans.type = IS_BOOL;
+		ans.val = new bool;
+		switch (type) {
+		case IS_INTEGER:
+			switch (rhs.type) {
+			case IS_INTEGER:
+				*(bool*)ans.val = *(IntType*)val > *(IntType*)rhs.val;
+				break;
+			case IS_DOUBLE:
+				*(bool*)ans.val = (double)*(IntType*)val > *(double*)rhs.val;
+				break;
+			case IS_BOOL:
+				assert(1);
+				break;
+			}
+			break;
+		case IS_DOUBLE:
+			switch (rhs.type) {
+			case IS_INTEGER:
+				*(bool*)ans.val = *(double*)val > (double)*(IntType*)rhs.val;
+				break;
+			case IS_DOUBLE:
+				*(bool*)ans.val = *(double*)val > *(double*)rhs.val;
+				break;
+			case IS_BOOL:
+				assert(1);
+				break;
+			}
+			break;
+		case IS_BOOL:
+			assert(1);
+			break;
+		}
+		return ans;
+	}
+	VALUE operator >= (const VALUE& rhs) {
+		static VALUE ans;
+		ans.type = IS_BOOL;
+		ans.val = new bool;
+		switch (type) {
+		case IS_INTEGER:
+			switch (rhs.type) {
+			case IS_INTEGER:
+				*(bool*)ans.val = *(IntType*)val >= *(IntType*)rhs.val;
+				break;
+			case IS_DOUBLE:
+				*(bool*)ans.val = (double)*(IntType*)val >= *(double*)rhs.val;
+				break;
+			case IS_BOOL:
+				assert(1);
+				break;
+			}
+			break;
+		case IS_DOUBLE:
+			switch (rhs.type) {
+			case IS_INTEGER:
+				*(bool*)ans.val = *(double*)val >= (double)*(IntType*)rhs.val;
+				break;
+			case IS_DOUBLE:
+				*(bool*)ans.val = *(double*)val >= *(double*)rhs.val;
+				break;
+			case IS_BOOL:
+				assert(1);
+				break;
+			}
+			break;
+		case IS_BOOL:
+			assert(1);
+			break;
+		}
+		return ans;
 	}
 };
 

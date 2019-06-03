@@ -40,7 +40,11 @@ int main()
 
     //in = "ans=0\nans(1,1)=2\nans(1,1)";
 
-    in = ".2\n3";
+    //in = ".2\n3";
+
+    //in = "a=3;a+=4";
+
+    in = "for(i=0;i<10;i=i+1){i}";
 
     pymm.Input(in.c_str(), info);
     cout << "-------------\n" << info.str();

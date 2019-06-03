@@ -92,19 +92,52 @@ struct VARIABLE {
 		assert(type == IS_VALUE && rhs.type == IS_VALUE);
         return VARIABLE(*(VALUE*)val / *(VALUE*)rhs.val);
     }
+    VARIABLE operator % (const VARIABLE& rhs) const {
+		assert(type == IS_VALUE && rhs.type == IS_VALUE);
+        return VARIABLE(*(VALUE*)val % *(VALUE*)rhs.val);
+    }
 
     VARIABLE operator += (const VARIABLE& rhs) {
-		static VARIABLE ans = *this + rhs;
-		return *this = ans;
+		assert(type == IS_VALUE && rhs.type == IS_VALUE);
+		*(VALUE*)val += *(const VALUE*)rhs.val;
+		return *this;
     }
     VARIABLE operator -= (const VARIABLE& rhs) {
-		return *this = *this - rhs;
+		assert(type == IS_VALUE && rhs.type == IS_VALUE);
+		*(VALUE*)val -= *(const VALUE*)rhs.val;
+		return *this;
     }
     VARIABLE operator *= (const VARIABLE& rhs) {
-		return *this = *this * rhs;
+		assert(type == IS_VALUE && rhs.type == IS_VALUE);
+		*(VALUE*)val *= *(const VALUE*)rhs.val;
+		return *this;
     }
     VARIABLE operator /= (const VARIABLE& rhs) {
-		return *this = *this / rhs;
+		assert(type == IS_VALUE && rhs.type == IS_VALUE);
+		*(VALUE*)val /= *(const VALUE*)rhs.val;
+		return *this;
+    }
+    VARIABLE operator %= (const VARIABLE& rhs) {
+		assert(type == IS_VALUE && rhs.type == IS_VALUE);
+		*(VALUE*)val %= *(const VALUE*)rhs.val;
+		return *this;
+    }
+
+    VARIABLE operator < (const VARIABLE& rhs) const {
+		assert(type == IS_VALUE && rhs.type == IS_VALUE);
+        return VARIABLE(*(VALUE*)val < *(VALUE*)rhs.val);
+    }
+    VARIABLE operator > (const VARIABLE& rhs) const {
+		assert(type == IS_VALUE && rhs.type == IS_VALUE);
+        return VARIABLE(*(VALUE*)val > *(VALUE*)rhs.val);
+    }
+    VARIABLE operator <= (const VARIABLE& rhs) const {
+		assert(type == IS_VALUE && rhs.type == IS_VALUE);
+        return VARIABLE(*(VALUE*)val <= *(VALUE*)rhs.val);
+    }
+    VARIABLE operator >= (const VARIABLE& rhs) const {
+		assert(type == IS_VALUE && rhs.type == IS_VALUE);
+        return VARIABLE(*(VALUE*)val >= *(VALUE*)rhs.val);
     }
 
     void IfValueThenToArray() {
@@ -171,6 +204,11 @@ struct CONST_OR_VARIABLE{
         vari = _vari;
         left_value = lv;
     }
+	void Init_new(bool _vari, bool lv) {
+		vari = _vari;
+		left_value = lv;
+		val = new VARIABLE;
+	}
     bool Copy(const CONST_OR_VARIABLE& rhs, ostream& info)
     {
         if(left_value && vari) {
@@ -183,36 +221,35 @@ struct CONST_OR_VARIABLE{
     }
     CONST_OR_VARIABLE operator + (const CONST_OR_VARIABLE& rhs) const {
         static CONST_OR_VARIABLE ans;
-        ans.left_value = false;
-        ans.vari = false;
-        ans.val = new VARIABLE;
+		ans.Init_new(false, false);
         *ans.val = *val + *rhs.val;
         return ans;
     }
     CONST_OR_VARIABLE operator - (const CONST_OR_VARIABLE& rhs) const {
         static CONST_OR_VARIABLE ans;
-        ans.left_value = false;
-        ans.vari = false;
-        ans.val = new VARIABLE;
+		ans.Init_new(false, false);
         *ans.val = *val - *rhs.val;
         return ans;
     }
     CONST_OR_VARIABLE operator * (const CONST_OR_VARIABLE& rhs) const {
         static CONST_OR_VARIABLE ans;
-        ans.left_value = false;
-        ans.vari = false;
-        ans.val = new VARIABLE;
+		ans.Init_new(false, false);
         *ans.val = *val * *rhs.val;
         return ans;
     }
     CONST_OR_VARIABLE operator / (const CONST_OR_VARIABLE& rhs) const {
         static CONST_OR_VARIABLE ans;
-        ans.left_value = false;
-        ans.vari = false;
-        ans.val = new VARIABLE;
+		ans.Init_new(false, false);
         *ans.val = *val / *rhs.val;
         return ans;
     }
+	CONST_OR_VARIABLE operator % (const CONST_OR_VARIABLE& rhs) const {
+		static CONST_OR_VARIABLE ans;
+		ans.Init_new(false, false);
+		*ans.val = *val % *rhs.val;
+		return ans;
+	}
+
     CONST_OR_VARIABLE& operator += (const CONST_OR_VARIABLE& rhs) {
         assert(left_value && vari);
         *val += *rhs.val;
@@ -233,6 +270,36 @@ struct CONST_OR_VARIABLE{
         *val /= *rhs.val;
         return *this;
     }
+    CONST_OR_VARIABLE& operator %= (const CONST_OR_VARIABLE& rhs) {
+        assert(left_value && vari);
+        *val %= *rhs.val;
+        return *this;
+    }
+
+	CONST_OR_VARIABLE operator < (const CONST_OR_VARIABLE& rhs) const {
+		static CONST_OR_VARIABLE ans;
+		ans.Init_new(false, false);
+		*ans.val = *val < *rhs.val;
+		return ans;
+	}
+	CONST_OR_VARIABLE operator <= (const CONST_OR_VARIABLE& rhs) const {
+		static CONST_OR_VARIABLE ans;
+		ans.Init_new(false, false);
+		*ans.val = *val <= *rhs.val;
+		return ans;
+	}
+	CONST_OR_VARIABLE operator > (const CONST_OR_VARIABLE& rhs) const {
+		static CONST_OR_VARIABLE ans;
+		ans.Init_new(false, false);
+		*ans.val = *val > *rhs.val;
+		return ans;
+	}
+	CONST_OR_VARIABLE operator >= (const CONST_OR_VARIABLE& rhs) const {
+		static CONST_OR_VARIABLE ans;
+		ans.Init_new(false, false);
+		*ans.val = *val >= *rhs.val;
+		return ans;
+	}
 
     void Print(ostream& out)
     {

@@ -79,6 +79,32 @@ void Init(void){
     numOfOperands[RIGHT_PARENTHESIS] = 0;
     associative[RIGHT_PARENTHESIS] = LEFT_ASSOCIATIVE;
 
+    operator_code["+="] = ADD_EQ;
+    priority[ADD_EQ] = 14;
+    numOfOperands[ADD_EQ] = 2;
+    associative[ADD_EQ] = RIGHT_ASSOCIATIVE;
+
+    operator_code["-="] = SUB_EQ;
+    priority[SUB_EQ] = 14;
+    numOfOperands[SUB_EQ] = 2;
+    associative[SUB_EQ] = RIGHT_ASSOCIATIVE;
+
+    operator_code["*="] = MUL_EQ;
+    priority[MUL_EQ] = 14;
+    numOfOperands[MUL_EQ] = 2;
+    associative[MUL_EQ] = RIGHT_ASSOCIATIVE;
+
+    operator_code["/="] = DIV_EQ;
+    priority[DIV_EQ] = 14;
+    numOfOperands[DIV_EQ] = 2;
+    associative[DIV_EQ] = RIGHT_ASSOCIATIVE;
+
+    operator_code["%="] = MODULUS_EQ;
+    priority[MODULUS_EQ] = 14;
+    numOfOperands[MODULUS_EQ] = 2;
+    associative[MODULUS_EQ] = RIGHT_ASSOCIATIVE;
+
+
     symbols.insert('=');
     symbols.insert('+');
     symbols.insert('-');
@@ -713,6 +739,7 @@ bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_
         FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
         FAIL_THEN_RETURN(ans.Copy(ans2, info));
         break;
+
     case ADD:
         FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
         FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
@@ -733,6 +760,59 @@ bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_
         FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
         ans = ans1 / ans2;
         break;
+    case MODULUS:
+        FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
+        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
+        ans = ans1 % ans2;
+        break;
+
+    case ADD_EQ:
+        FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
+        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
+        ans += ans2;
+        break;
+    case SUB_EQ:
+        FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
+        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
+        ans -= ans2;
+        break;
+    case MUL_EQ:
+        FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
+        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
+        ans *= ans2;
+        break;
+    case DIV_EQ:
+        FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
+        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
+        ans /= ans2;
+        break;
+    case MODULUS_EQ:
+        FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
+        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
+        ans %= ans2;
+        break;
+
+    case LESS:
+        FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
+        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
+        ans = ans1 < ans2;
+        break;
+    case LESS_EQ:
+        FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
+        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
+        ans = ans1 <= ans2;
+        break;
+    case GREATER:
+        FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
+        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
+        ans = ans1 > ans2;
+        break;
+    case GREATER_EQ:
+        FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
+        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
+        ans = ans1 >= ans2;
+        break;
+
     default:
         ErrMsg(info, "No such an operator ", root->op());
         break;

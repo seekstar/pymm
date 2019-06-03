@@ -63,6 +63,15 @@ struct SignedBigInt
 	{
 	    return absVal.s.empty() && b.absVal.s.empty() ? 0 : (is_minus != b.is_minus ? is_minus : (is_minus ? b.absVal < absVal : absVal < b.absVal));
 	}
+	bool operator <= (const SignedBigInt& b) const {
+		return *this < b || *this == b;
+	}
+	bool operator > (const SignedBigInt& b) const {
+		return b < *this;
+	}
+	bool operator >= (const SignedBigInt& b) const {
+		return b <= *this;
+	}
 
 	bool operator == (int b) const
 	{

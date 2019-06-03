@@ -8,6 +8,9 @@ ostream& operator << (ostream& out, const VALUE& x) {
 	case IS_DOUBLE:
 		out << *(double*)x.val;
 		break;
+	case IS_BOOL:
+		out << *(bool*)x.val;
+		break;
 	}
 	return out;
 }
