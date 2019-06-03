@@ -1,9 +1,12 @@
 #ifndef SIGNEDBIGINT_H_INCLUDED
 #define SIGNEDBIGINT_H_INCLUDED
 
-#include <cmath>
+//#include <bits/stdc++.h>
+#include <cstdlib>
 
 #include "UnsignedBigInt.h"
+
+using namespace std;
 
 struct SignedBigInt
 {
@@ -12,14 +15,19 @@ struct SignedBigInt
 	UnsignedBigInt absVal;
 
 	SignedBigInt(){is_minus = 0;}
-	SignedBigInt(LL num)
+	explicit SignedBigInt(LL num)
 	{
 		*this = num;
 	}
-	SignedBigInt(const string& num)
+	explicit SignedBigInt(const string& num)
 	{
 		*this = num;
 	}
+	explicit SignedBigInt(const UnsignedBigInt& val) {
+		absVal = val;
+		is_minus = false;
+	}
+
 	explicit operator LL()
 	{
 	    return is_minus ? -(LL)absVal : (LL)absVal;
@@ -53,11 +61,11 @@ struct SignedBigInt
 	    return absVal.s.empty() && b.absVal.s.empty() ? 0 : (is_minus != b.is_minus ? is_minus : (is_minus ? b.absVal < absVal : absVal < b.absVal));
 	}
 
-	bool operator == (const int& b) const
+	bool operator == (int b) const
 	{
-	    return (b < 0) ^ is_minus ? (absVal.s.empty() && b == 0) : absVal == abs(b);
+	    return (b < 0) ^ is_minus ? (absVal.s.empty() && b == 0) : absVal == UnsignedBigInt(std::abs(b));
 	}
-	bool operator < (const int& b) const
+	bool operator < (int b) const
 	{
 	    return absVal.s.empty() ? b > 0 : ((b < 0) ^ is_minus ? is_minus : (is_minus ? -b < absVal : absVal < b));
 	}
@@ -186,9 +194,14 @@ struct SignedBigInt
 	{
 	    return *this = *this % b;
 	}
+
+	SignedBigInt abs() const {
+		return SignedBigInt(absVal);
+	}
 };
 
 ostream& operator << (ostream& out, const SignedBigInt& a);
 istream& operator >> (istream& in, SignedBigInt& a);
+SignedBigInt sqrt(const SignedBigInt& x, int m = 2);
 
 #endif

@@ -637,9 +637,10 @@
 1558993438 source:g:\git\files\pymm\unsignedbigint.cpp
 	"UnsignedBigInt.h"
 
-1559531429 source:/home/searchstar/git/pymm/main.cpp
+1559540137 source:/home/searchstar/git/pymm/main.cpp
 	<iostream>
 	"MyPyMinusMinus.h"
+	"MyArray.h"
 
 1559482331 /home/searchstar/git/pymm/MyPyMinusMinus.h
 	<vector>
@@ -662,23 +663,23 @@
 	"MyError.h"
 	"MyFlags.h"
 
-1559530389 /home/searchstar/git/pymm/MyVariable.h
+1559553850 /home/searchstar/git/pymm/MyVariable.h
 	<assert.h>
 	"MyFlags.h"
-	"MyInteger.h"
-	"MyMatrix.h"
+	"MyArray.h"
+	"MyValue.h"
 
-1559530828 /home/searchstar/git/pymm/MyFlags.h
+1559552905 /home/searchstar/git/pymm/MyFlags.h
 
 1559034154 /home/searchstar/git/pymm/MyInteger.h
 	"SignedBigInt.h"
 	"MyFlags.h"
 
-1559475802 /home/searchstar/git/pymm/SignedBigInt.h
-	<cmath>
+1559544891 /home/searchstar/git/pymm/SignedBigInt.h
+	<cstdlib>
 	"UnsignedBigInt.h"
 
-1559138727 /home/searchstar/git/pymm/UnsignedBigInt.h
+1559544644 /home/searchstar/git/pymm/UnsignedBigInt.h
 	<iostream>
 	<iomanip>
 	<vector>
@@ -706,7 +707,7 @@
 
 1559036854 /home/searchstar/git/pymm/MyArithmetic.h
 
-1559531343 source:/home/searchstar/git/pymm/MyAnalysis.cpp
+1559553500 source:/home/searchstar/git/pymm/MyAnalysis.cpp
 	"MyAnalysis.h"
 	"PrintTree.h"
 
@@ -719,13 +720,13 @@
 1559469430 source:/home/searchstar/git/pymm/MyString.cpp
 	"MyString.h"
 
-1559043784 source:/home/searchstar/git/pymm/MyVariable.cpp
+1559553465 source:/home/searchstar/git/pymm/MyVariable.cpp
 	"MyVariable.h"
 
-1558755208 source:/home/searchstar/git/pymm/SignedBigInt.cpp
+1559549765 source:/home/searchstar/git/pymm/SignedBigInt.cpp
 	"SignedBigInt.h"
 
-1558755208 source:/home/searchstar/git/pymm/UnsignedBigInt.cpp
+1559544474 source:/home/searchstar/git/pymm/UnsignedBigInt.cpp
 	"UnsignedBigInt.h"
 
 1559486359 source:/home/searchstar/git/pymm/PrintTree.cpp
@@ -744,4 +745,20 @@
 
 1559139778 source:/home/searchstar/git/pymm/MyStringSTL.cpp
 	"MyStringSTL.h"
+
+1559553708 source:/home/searchstar/git/pymm/MyArray.cpp
+	"MyArray.h"
+
+1559554183 /home/searchstar/git/pymm/MyArray.h
+	<vector>
+	<assert.h>
+	<ostream>
+
+1559553075 source:/home/searchstar/git/pymm/MyValue.cpp
+	"MyValue.h"
+
+1559552968 /home/searchstar/git/pymm/MyValue.h
+	<cstdio>
+	"MyInteger.h"
+	"MyMatrix.h"
 

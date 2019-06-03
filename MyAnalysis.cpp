@@ -625,7 +625,7 @@ bool CalcByTree(const NODE* root, unordered_map<string, VARIABLE>& variable_tabl
         CONST_OR_VARIABLE ans;
         FAIL_THEN_RETURN(CalcByTree(ans, root, false, variable_table, info));
         if (root->output) {
-            info << ToString(*ans.val) << endl;
+            info << *ans.val << endl;
         }
         ans.del();
         root = root->sibling;

@@ -127,3 +127,31 @@ NODE(){}
             break;
         }
     }
+
+
+
+
+
+
+
+
+
+
+size_t position(const vector<size_t>& pos) const {
+		assert(len.size() == pos.size());
+		size_t ans = 0;
+		for (int i = 0; i < pos.size(); ++i) {
+			ans += pos[i] * len[len.size() - i - 1];
+		}
+		return ans;
+	}
+
+
+void resize(const vector<size_t>& _len) {
+		len.resize(_len.size());
+		for (int i = 0; i < _len.size(); ++i) {
+			len[len.size() - i - 1] = _len[i];
+		}
+		ResizeBase();
+	}
+

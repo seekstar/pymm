@@ -4,495 +4,114 @@
 #include <assert.h>
 
 #include "MyFlags.h"
-#include "MyInteger.h"
-#include "MyMatrix.h"
+
 //#include "MyStringSTL.h"
+#include "MyArray.h"
+#include "MyValue.h"
 
 using namespace std;
 
-//元数据类型
-enum VAL_TYPE{
-    IS_INTEGER,
-    IS_DOUBLE,
-    IS_MATRIX
+enum VARIABLE_TYPE {
+    IS_VALUE,
+    IS_MATRIX,
+    IS_ARRAY
 };
 
-struct VARIABLE{
-    VAL_TYPE type;
+typedef MyArray<VALUE> ARRAY;
+
+struct VARIABLE {
+    VARIABLE_TYPE type;
     void* val;
 
-    VARIABLE()
-    {
+    VARIABLE() {
         val = NULL;
     }
+	VARIABLE(const VALUE& v) {
+		type = IS_VALUE;
+		val = new VALUE(v);
+	}
     ~VARIABLE() {
         ;
     }
-    explicit operator bool() {
-        switch (type) {
-        case IS_INTEGER:
-            return (bool)*(IntType*)val;
-        case IS_DOUBLE:
-            return abs(*(double*)val) >= 1e-6;
-        case IS_MATRIX:
-            assert(1);
-            return (bool)*(MATRIX*)val;
-        default:
-            assert(1);
-            return false;
-        }
-    }
-    void del() {
+	void del() {
         if (!val) return;
         switch (type) {
-        case IS_INTEGER:
-            delete (IntType*)val;
-            break;
-        case IS_DOUBLE:
-            delete (double*)val;
+        case IS_VALUE:
+            delete (VALUE*)val;
             break;
         case IS_MATRIX:
             delete (MATRIX*)val;
             break;
+		case IS_ARRAY:
+			delete (ARRAY*)val;
+			break;
         }
         val = NULL;
     }
-    VARIABLE& Copy(const VARIABLE& rhs)
-    {
+    explicit operator bool() {
+		assert(IS_VALUE == type);
+        return (bool)*(VALUE*)val;
+    }
+    VARIABLE& Copy(const VARIABLE& rhs) {
         del();
         type = rhs.type;
         switch (type) {
-        case IS_INTEGER:
-            val = new IntType;
-            *(IntType*)val = *(IntType*)rhs.val;
-            break;
-        case IS_DOUBLE:
-            val = new double;
-            *(double*)val = *(double*)rhs.val;
+        case IS_VALUE:
+            val = new VALUE;
+            ((VALUE*)val)->Copy(*(VALUE*)rhs.val);
             break;
         case IS_MATRIX:
             //val = new MATRIX;
             break;
+		case IS_ARRAY:
+			val = new ARRAY;
+			*(ARRAY*)val = *(ARRAY*)rhs.val;
+			break;
         }
         return *this;
     }
-    VARIABLE operator + (const VARIABLE& rhs) const
-    {
-        static VARIABLE ans;
-        switch (type) {
-        case IS_INTEGER:
-            switch (rhs.type) {
-            case IS_INTEGER:
-                ans.type = IS_INTEGER;
-                ans.val = new IntType;
-                *(IntType*)ans.val = *(IntType*)val + *(IntType*)rhs.val;
-                break;
-            case IS_DOUBLE:
-                ans.type = IS_DOUBLE;
-                ans.val = new double;
-                *(double*)ans.val = (double)(*(IntType*)val) + *(double*)rhs.val;
-                break;
-            case IS_MATRIX:
-                cerr << "Undefined operator '+' between integer and matrix!\n";
-                break;
-            }
-            break;
-        case IS_DOUBLE:
-            switch (rhs.type) {
-            case IS_INTEGER:
-                ans = rhs + *this;
-                break;
-            case IS_DOUBLE:
-                ans.type = IS_DOUBLE;
-                ans.val = new double;
-                *(double*)ans.val = *(double*)val + *(double*)rhs.val;
-                break;
-            case IS_MATRIX:
-                ans.type = IS_DOUBLE;
-                ans.val = new double;
-                //*(double*)ans.val = *(double*)val + *(MATRIX*)rhs.val;
-                cerr << "Undefined operator '+' between double and matrix!\n";
-                break;
-            }
-        case IS_MATRIX:
-            switch (rhs.type) {
-            case IS_INTEGER:	//The same as IS_DOUBLE
-            case IS_DOUBLE:
-                ans = rhs + *this;
-                break;
-            case IS_MATRIX:
-                cerr << "Undefined operator '+' between matrix and matrix!";
-                break;
-            }
-        }
-        return ans;
+    VARIABLE operator + (const VARIABLE& rhs) const {
+		assert(type == IS_VALUE && rhs.type == IS_VALUE);
+        return VARIABLE(*(const VALUE*)val + *(const VALUE*)rhs.val);
     }
-    VARIABLE operator - (const VARIABLE& rhs) const
-    {
-        static VARIABLE ans;
-        switch (type) {
-        case IS_INTEGER:
-            switch (rhs.type) {
-            case IS_INTEGER:
-                ans.type = IS_INTEGER;
-                ans.val = new IntType;
-                *(IntType*)ans.val = *(IntType*)val - *(IntType*)rhs.val;
-                break;
-            case IS_DOUBLE:
-                ans.type = IS_DOUBLE;
-                ans.val = new double;
-                *(double*)ans.val = (double)(*(IntType*)val) - *(double*)rhs.val;
-                break;
-            case IS_MATRIX:
-                cerr << "Undefined operator '-' between integer and matrix!\n";
-                break;
-            }
-            break;
-        case IS_DOUBLE:
-            switch (rhs.type) {
-            case IS_INTEGER:
-                ans.type = IS_DOUBLE;
-                ans.val = new double;
-                *(double*)ans.val = *(double*)val - (double)(*(IntType*)val);
-                break;
-            case IS_DOUBLE:
-                ans.type = IS_DOUBLE;
-                ans.val = new double;
-                *(double*)ans.val = *(double*)val + *(double*)rhs.val;
-                break;
-            case IS_MATRIX:
-                //*(double*)ans.val = *(double*)val + *(MATRIX*)rhs.val;
-                cerr << "Undefined operator '+' between double and matrix!\n";
-                break;
-            }
-        case IS_MATRIX:
-            switch (rhs.type) {
-            case IS_INTEGER:
-            	cerr << "Undefined operator '-' between matrix and integer!\n";
-            case IS_DOUBLE:
-                cerr << "Undefined operator '-' between matrix and double!\n";
-                break;
-            case IS_MATRIX:
-                cerr << "Undefined operator '-' between matrix and matrix!";
-                break;
-            }
-        }
-        return ans;
+    VARIABLE operator - (const VARIABLE& rhs) const {
+		assert(type == IS_VALUE && rhs.type == IS_VALUE);
+        return VARIABLE(*(VALUE*)val - *(VALUE*)rhs.val);
     }
-    VARIABLE operator * (const VARIABLE& rhs) const
-    {
-    	static VARIABLE ans;
-
-    	switch (type) {
-        case IS_INTEGER:
-            switch (rhs.type) {
-            case IS_INTEGER:
-                ans.type = IS_INTEGER;
-                ans.val = new IntType;
-                *(IntType*)ans.val = *(IntType*)val * *(IntType*)rhs.val;
-                break;
-            case IS_DOUBLE:
-                ans.type = IS_DOUBLE;
-                ans.val = new double;
-                *(double*)ans.val = (double)(*(IntType*)val) * *(double*)rhs.val;
-                break;
-            case IS_MATRIX:
-                cerr << "Undefined operator '*' between integer and matrix!\n";
-                break;
-            }
-            break;
-        case IS_DOUBLE:
-            switch (rhs.type) {
-            case IS_INTEGER:
-                ans.type = IS_DOUBLE;
-                ans.val = new double;
-                *(double*)ans.val = *(double*)val * (double)(*(IntType*)val);
-            case IS_DOUBLE:
-                ans.type = IS_DOUBLE;
-                ans.val = new double;
-                *(double*)ans.val = *(double*)val * *(double*)rhs.val;
-                break;
-            case IS_MATRIX:
-                ans.type = IS_DOUBLE;
-                ans.val = new double;
-                //*(double*)ans.val = *(double*)val * *(MATRIX*)rhs.val;
-                cerr << "Undefined operator '*' between double and matrix!\n";
-                break;
-            }
-        case IS_MATRIX:
-            switch (rhs.type) {
-            case IS_INTEGER:
-            	cerr << "Undefined operator '*' between matrix and integer!\n";
-            case IS_DOUBLE:
-                cerr << "Undefined operator '*' between matrix and double!\n";
-                break;
-            case IS_MATRIX:
-                cerr << "Undefined operator '*' between matrix and matrix!";
-                break;
-            }
-        }
-
-    	return ans;
+    VARIABLE operator * (const VARIABLE& rhs) const {
+		assert(type == IS_VALUE && rhs.type == IS_VALUE);
+        return VARIABLE(*(VALUE*)val * *(VALUE*)rhs.val);
     }
-    VARIABLE operator / (const VARIABLE& rhs) const
-    {
-    	static VARIABLE ans;
-
-    	switch (type) {
-        case IS_INTEGER:
-            switch (rhs.type) {
-            case IS_INTEGER:
-                ans.type = IS_INTEGER;
-                ans.val = new IntType;
-                *(IntType*)ans.val = *(IntType*)val / *(IntType*)rhs.val;
-                break;
-            case IS_DOUBLE:
-                ans.type = IS_DOUBLE;
-                ans.val = new double;
-                *(double*)ans.val = (double)(*(IntType*)val) / *(double*)rhs.val;
-                break;
-            case IS_MATRIX:
-                cerr << "Undefined operator '/' between integer and matrix!\n";
-                break;
-            }
-            break;
-        case IS_DOUBLE:
-            switch (rhs.type) {
-            case IS_INTEGER:
-                ans.type = IS_DOUBLE;
-                ans.val = new double;
-                *(double*)ans.val = *(double*)val / (double)(*(IntType*)val);
-            case IS_DOUBLE:
-                ans.type = IS_DOUBLE;
-                ans.val = new double;
-                *(double*)ans.val = *(double*)val / *(double*)rhs.val;
-                break;
-            case IS_MATRIX:
-                ans.type = IS_DOUBLE;
-                ans.val = new double;
-                //*(double*)ans.val = *(double*)val / *(MATRIX*)rhs.val;
-                cerr << "Undefined operator '/' between double and matrix!\n";
-                break;
-            }
-        case IS_MATRIX:
-            switch (rhs.type) {
-            case IS_INTEGER:
-            	cerr << "Undefined operator '/' between matrix and integer!\n";
-            case IS_DOUBLE:
-                cerr << "Undefined operator '/' between matrix and double!\n";
-                break;
-            case IS_MATRIX:
-                cerr << "Undefined operator '/' between matrix and matrix!";
-                break;
-            }
-        }
-
-    	return ans;
-    }
-    VARIABLE operator += (const VARIABLE& rhs)
-    {
-       /* switch(type){
-        case IS_INTEGER:
-            switch(rhs.type){
-            case IS_INTEGER:
-                (*this).type = IS_INTEGER;
-
-                break;
-            case IS_DOUBLE:
-                (*this).type = IS_DOUBLE;
-
-                break;
-            case IS_MATRIX:
-                cerr << "Undefined operator '+' between integer and matrix!\n";
-                break;
-            }
-            break;
-        case IS_DOUBLE:
-            switch (rhs.type) {
-            case IS_INTEGER:
-                (*this).type = IS_DOUBLE;
-
-                break;
-            case IS_DOUBLE:
-                (*this).type = IS_DOUBLE;
-
-                break;
-            case IS_MATRIX:
-                // *(double*)ans.val = *(double*)val + *(MATRIX*)rhs.val;
-                cerr << "Undefined operator '+' between double and matrix!\n";
-                break;
-            }
-        case IS_MATRIX:
-            switch (rhs.type) {
-            case IS_INTEGER:
-            	cerr << "Undefined operator '+' between matrix and integer!\n";
-            case IS_DOUBLE:
-                cerr << "Undefined operator '+' between matrix and double!\n";
-                break;
-            case IS_MATRIX:
-                cerr << "Undefined operator '+' between matrix and matrix!";
-                break;
-            }
-        }*/
-		return *this = *this + rhs;
+    VARIABLE operator / (const VARIABLE& rhs) const {
+		assert(type == IS_VALUE && rhs.type == IS_VALUE);
+        return VARIABLE(*(VALUE*)val / *(VALUE*)rhs.val);
     }
 
-    VARIABLE operator -= (const VARIABLE& rhs)
-    {
-       /* switch(type){
-        case IS_INTEGER:
-            switch(rhs.type){
-            case IS_INTEGER:
-                (*this).type = IS_INTEGER;
-
-                break;
-            case IS_DOUBLE:
-                (*this).type = IS_DOUBLE;
-
-                break;
-            case IS_MATRIX:
-                cerr << "Undefined operator '-' between integer and matrix!\n";
-                break;
-            }
-            break;
-        case IS_DOUBLE:
-            switch (rhs.type) {
-            case IS_INTEGER:
-                (*this).type = IS_DOUBLE;
-
-                break;
-            case IS_DOUBLE:
-                (*this).type = IS_DOUBLE;
-
-                break;
-            case IS_MATRIX:
-                // *(double*)ans.val = *(double*)val - *(MATRIX*)rhs.val;
-                cerr << "Undefined operator '-' between double and matrix!\n";
-                break;
-            }
-        case IS_MATRIX:
-            switch (rhs.type) {
-            case IS_INTEGER:
-            	cerr << "Undefined operator '-' between matrix and integer!\n";
-            case IS_DOUBLE:
-                cerr << "Undefined operator '-' between matrix and double!\n";
-                break;
-            case IS_MATRIX:
-                cerr << "Undefined operator '-' between matrix and matrix!";
-                break;
-            }
-        }*/
+    VARIABLE operator += (const VARIABLE& rhs) {
+		static VARIABLE ans = *this + rhs;
+		return *this = ans;
+    }
+    VARIABLE operator -= (const VARIABLE& rhs) {
 		return *this = *this - rhs;
     }
-
-    VARIABLE operator *= (const VARIABLE& rhs)
-    {
-    	/*switch (type) {
-        case IS_INTEGER:
-            switch(rhs.type){
-            case IS_INTEGER:
-                (*this).type = IS_INTEGER;
-
-                break;
-            case IS_DOUBLE:
-                (*this).type = IS_DOUBLE;
-
-                break;
-            case IS_MATRIX:
-                cerr << "Undefined operator '*' between integer and matrix!\n";
-                break;
-            }
-            break;
-         case IS_DOUBLE:
-            switch (rhs.type) {
-            case IS_INTEGER:
-                (*this).type = IS_DOUBLE;
-
-                break;
-            case IS_DOUBLE:
-                (*this).type = IS_DOUBLE;
-
-                break;
-            case IS_MATRIX:
-                // *(double*)ans.val = *(double*)val * *(MATRIX*)rhs.val;
-                cerr << "Undefined operator '*' between double and matrix!\n";
-                break;
-            }
-        case IS_MATRIX:
-            switch (rhs.type) {
-            case IS_INTEGER:
-            	cerr << "Undefined operator '*' between matrix and integer!\n";
-            case IS_DOUBLE:
-                cerr << "Undefined operator '*' between matrix and double!\n";
-                break;
-            case IS_MATRIX:
-                cerr << "Undefined operator '*' between matrix and matrix!";
-                break;
-            }
-        }*/
+    VARIABLE operator *= (const VARIABLE& rhs) {
 		return *this = *this * rhs;
     }
-
-    VARIABLE operator /= (const VARIABLE& rhs)
-    {
-    	/*switch (type) {
-       case IS_INTEGER:
-            switch(rhs.type){
-            case IS_INTEGER:
-                (*this).type = IS_INTEGER;
-
-                break;
-            case IS_DOUBLE:
-                (*this).type = IS_DOUBLE;
-
-                break;
-            case IS_MATRIX:
-                cerr << "Undefined operator '/' between integer and matrix!\n";
-                break;
-            }
-            break;
-        case IS_DOUBLE:
-            switch (rhs.type) {
-            case IS_INTEGER:
-                (*this).type = IS_DOUBLE;
-
-                break;
-            case IS_DOUBLE:
-                (*this).type = IS_DOUBLE;
-
-                break;
-            case IS_MATRIX:
-                // *(double*)ans.val = *(double*)val / *(MATRIX*)rhs.val;
-                cerr << "Undefined operator '/' between double and matrix!\n";
-                break;
-            }
-        case IS_MATRIX:
-            switch (rhs.type) {
-            case IS_INTEGER:
-            	cerr << "Undefined operator '/' between matrix and integer!\n";
-            case IS_DOUBLE:
-                cerr << "Undefined operator '/' between matrix and double!\n";
-                break;
-            case IS_MATRIX:
-                cerr << "Undefined operator '/' between matrix and matrix!";
-                break;
-            }
-        }*/
+    VARIABLE operator /= (const VARIABLE& rhs) {
 		return *this = *this / rhs;
     }
 
-    void Print(ostream& out)
-    {
+    void Print(ostream& out) const {
         switch (type) {
-        case IS_INTEGER:
-            out << *(IntType*)val;
-            break;
-        case IS_DOUBLE:
-            out << *(double*)val;
+        case IS_VALUE:
+            out << *(const VALUE*)val;
             break;
         case IS_MATRIX:
-            out << *(MATRIX*)val;
+            out << *(const MATRIX*)val;
             break;
+		case IS_ARRAY:
+			out << *(const ARRAY*)val;
+			break;
         }
     }
 };
@@ -601,6 +220,7 @@ bool IsPartOfConst(char ch);
 
 void GetConst(string& sth, const char*& str);
 void GetConst(VARIABLE& val, const char* str);
-string ToString(const VARIABLE& val);
+void GetConst(VALUE& val, const char* str);
+ostream& operator << (ostream& out, const VARIABLE& val);
 
 #endif // MYVARIABLE_H_INCLUDED

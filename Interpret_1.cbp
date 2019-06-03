@@ -35,6 +35,7 @@
 		<Unit filename="MyAnalysis.cpp" />
 		<Unit filename="MyAnalysis.h" />
 		<Unit filename="MyArithmetic.h" />
+		<Unit filename="MyArray.h" />
 		<Unit filename="MyError.cpp" />
 		<Unit filename="MyError.h" />
 		<Unit filename="MyFlags.h" />
@@ -47,6 +48,8 @@
 		<Unit filename="MyString.h" />
 		<Unit filename="MyStringSTL.cpp" />
 		<Unit filename="MyStringSTL.h" />
+		<Unit filename="MyValue.cpp" />
+		<Unit filename="MyValue.h" />
 		<Unit filename="MyVariable.cpp" />
 		<Unit filename="MyVariable.h" />
 		<Unit filename="MyVector.h" />

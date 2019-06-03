@@ -48,19 +48,22 @@ struct UnsignedBigInt
     vector<int>s;
 
     UnsignedBigInt() {}
-    UnsignedBigInt(LL num)
+    explicit UnsignedBigInt(int num) {
+        s.push_back(num);
+    }
+    explicit UnsignedBigInt(LL num)
     {
         *this = num;
     }
-    UnsignedBigInt(const string& str)
+    explicit UnsignedBigInt(const string& str)
     {
         *this = str;
     }
-    UnsignedBigInt(const char* str)
+    explicit UnsignedBigInt(const char* str)
     {
         *this = str;
     }
-    UnsignedBigInt(const vector<int>& in): s(in)
+    explicit UnsignedBigInt(const vector<int>& in): s(in)
     {
         clean();
     }
@@ -107,6 +110,12 @@ struct UnsignedBigInt
         return ans.str();
     }
 
+    /*UnsignedBigInt& operator = (const int num) {
+        assert(num < BASE);
+        s.resize(1);
+        s[0] = num;
+        return *this;
+    }*/
     UnsignedBigInt& operator = (LL num)
     {
         s.clear();
@@ -115,7 +124,7 @@ struct UnsignedBigInt
             s.push_back(num % BASE);
             num /= BASE;
         }
-        return *this;
+        return clean();
     }
 
     UnsignedBigInt& assign(const char* str, int slen)
@@ -441,8 +450,8 @@ struct UnsignedBigInt
     void div_mod(const UnsignedBigInt& b, UnsignedBigInt& ans, UnsignedBigInt& rem) const
     {
         assert(!b.s.empty());
-        UnsignedBigInt expNum = 1;
-        UnsignedBigInt divisor = b;
+        UnsignedBigInt expNum(1);
+        UnsignedBigInt divisor(b);
 
         rem = *this;
         while(divisor <= rem)
@@ -490,7 +499,7 @@ struct UnsignedBigInt
 
     inline UnsignedBigInt Move_right_BASE(int n) const
     {
-        return n >= (int)s.size() ? UnsignedBigInt() : vector<int>(s.begin() + n, s.end());
+        return n >= (int)s.size() ? UnsignedBigInt() : UnsignedBigInt(vector<int>(s.begin() + n, s.end()));
     }
 
     //n < WIDTH
@@ -529,7 +538,7 @@ struct UnsignedBigInt
     UnsignedBigInt operator ^ (int m) const
     {
         if(0 == m)
-            return 1;
+            return UnsignedBigInt(1);
         assert(m > 0);
         UnsignedBigInt ans = *this;
         m--;
@@ -537,8 +546,6 @@ struct UnsignedBigInt
             ans *= *this;
         return ans;
     }
-
-    friend UnsignedBigInt sqrt(const UnsignedBigInt& x, int m);
 
     //Independent
     //Number of digits in decimal
@@ -557,6 +564,8 @@ struct UnsignedBigInt
         return i;
     }
 };
+
+UnsignedBigInt sqrt(const UnsignedBigInt& x, int m = 2);
 
 ostream& operator << (ostream& out, const UnsignedBigInt& a);
 istream& operator >> (istream& in, UnsignedBigInt& a);

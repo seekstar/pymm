@@ -4,6 +4,21 @@
 
 using namespace std;
 
+#if DEBUG_ARRAY
+#include "MyArray.h"
+
+int main() {
+    ARRAY<int> arr(vector(3,4));
+
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            arr(i, j) = i * 4 + j;
+        }
+    }
+
+    cout << arr << endl;
+}
+#else
 int main()
 {
     PYMM pymm;
@@ -60,3 +75,4 @@ int main()
 
     return 0;
 }
+#endif // DEBUG_ARRAY
