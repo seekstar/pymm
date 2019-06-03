@@ -44,7 +44,8 @@ int main()
     //in = "a=9;while(a){a=a-1}";
     //in = "a=-9;while(a){a=a+1;b=a*3}";
 
-    in = "for(i=10;i;i=i-1){i}";
+    //in = "for(i=10;i;i=i-1){i}";
+    in = "i=10;\ndo{\ni=i-1\n}while(i)";
 
     pymm.Input(in.c_str(), info);
     cout << "-------------\n" << info.str();

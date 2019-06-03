@@ -575,6 +575,20 @@ bool Parsing_IS_KEY_WORD(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>
         //Now "now" points the next sentence.
         --now;  //Because the for loop will increase it soon
         break;
+    case DO_KEY:
+        operand->structure() = DO_WHILE;
+        ++now;
+        ++now;  //skip '{'
+        FAIL_THEN_RETURN(Parsing(operand->child[1], now, info));        //loop body
+        if (now->type == IS_KEY_WORD && key_word_code[now->name] == WHILE_KEY) {
+            ++now;  //skip "while"
+            ++now;  //skip '('
+            FAIL_THEN_RETURN(Parsing_dfs(operand->child[0], now, finish, info));    //codition
+            //++now;  //skip ';'
+        } else {
+            assert(1);
+        }
+        break;
     default:
         error_type = UNRECOGNIZED_KEY;
         break;
