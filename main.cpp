@@ -38,7 +38,9 @@ int main()
     //in = "arr=0;i=10;while(i){arr(i)=i\ni=i-1}";
     //in = "j = 1;\nans = 1;\nfor (i = 10; i; i = i-1) {\nans(j) = ans(j-1) * j;\nj = j+1;\n}\nj = 1;\nfor (i = 10; i; i = i-1) {\nans(j)\nj = j+1;\n}\n";
 
-    in = "ans=0\nans(1,1)=2\nans(1,1)";
+    //in = "ans=0\nans(1,1)=2\nans(1,1)";
+
+    in = ".2\n3";
 
     pymm.Input(in.c_str(), info);
     cout << "-------------\n" << info.str();

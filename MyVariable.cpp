@@ -14,7 +14,7 @@ bool IsPartOfConst(char ch)
 
 void GetConst(string& sth, const char*& str)
 {
-    while(isdigit(*str) || isalpha(*str)){
+    while(isdigit(*str) || isalpha(*str) || *str == '.'){
         sth.push_back(*str++);
     }
 }
