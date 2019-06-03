@@ -87,6 +87,17 @@ a=9;while(a){a=a-1}
 
 
 
+j = 1;
+ans = 1;
+for (i = 10; i; i = i-1) {
+	ans(j) = ans(j-1) * j;
+	j = j+1;
+}
+j = 1;
+for (i = 10; i; i = i-1) {
+	ans(j)
+	j = j+1;
+}
 
 
 a=-9;while(a){a=a+1}

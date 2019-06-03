@@ -4,21 +4,6 @@
 
 using namespace std;
 
-#if DEBUG_ARRAY
-#include "MyArray.h"
-
-int main() {
-    ARRAY<int> arr(vector(3,4));
-
-    for (int i = 0; i < 3; ++i) {
-        for (int j = 0; j < 4; ++j) {
-            arr(i, j) = i * 4 + j;
-        }
-    }
-
-    cout << arr << endl;
-}
-#else
 int main()
 {
     PYMM pymm;
@@ -38,30 +23,20 @@ int main()
 
     //in += "a*=9";
 
-/*
-    in = "a=(1+\n";
-    pymm.Input(in.c_str(), info);
-    cout << "-------------\n" << info.str();
-    info.str("");
-
-    in = "2)\n";
-    pymm.Input(in.c_str(), info);
-    cout << "-------------\n" << info.str();
-    info.str("");*/
-/*
     //in = "if(0){a=1;}else{a=2;}\na";
-    in = "a = 0;\nif(a){b=2}else{b=1\nc = b*3 * (1+b);}c";
-    pymm.Input(in.c_str(), info);
+    //in = "a = 0;\nif(a){b=2}else{b=1\nc = b*3 * (1+b);}c";
     //in = "a";
-    */
     //in = "if(1){\nb=2;\n}else{\nb=5;\n}";
     //in = "a=-9;while(a){a=a+1}";
     //in = "a=9;while(a){a=a-1}";
     //in = "a=-9;while(a){a=a+1;b=a*3}";
 
     //in = "for(i=10;i;i=i-1){i}";
-    in = "i=10;\ndo{\ni=i-1\n}while(i)";
+    //in = "i=10;\ndo{\ni=i-1\n}while(i)";
 
+    //in = "ans=1\nans(0)\nans(1)=2";
+    //in = "arr=0;i=10;while(i){arr(i)=i\ni=i-1}";
+    in = "j = 1;\nans = 1;\nfor (i = 10; i; i = i-1) {\nans(j) = ans(j-1) * j;\nj = j+1;\n}\nj = 1;\nfor (i = 10; i; i = i-1) {\nans(j)\nj = j+1;\n}\n";
     pymm.Input(in.c_str(), info);
     cout << "-------------\n" << info.str();
 
@@ -75,4 +50,3 @@ int main()
 
     return 0;
 }
-#endif // DEBUG_ARRAY

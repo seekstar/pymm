@@ -51,6 +51,9 @@ struct SignedBigInt
 	explicit operator bool() const {
 		return absVal.s.size();
 	}
+	explicit operator int() const {
+		return absVal.s.size() ? (is_minus ? -absVal.s[0] : absVal.s[0]) : 0;
+	}
 
 	bool operator == (const SignedBigInt& b) const
 	{

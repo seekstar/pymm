@@ -5,7 +5,12 @@
 #include <assert.h>
 #include <ostream>
 
+#include "MyTrivialFunc.h"
+
 using namespace std;
+
+size_t Position(const vector<size_t>& len, const vector<size_t>& pos);
+size_t CalcSize(const vector<size_t>& len);
 
 template<typename value_type>
 struct MyArray {
@@ -39,11 +44,7 @@ struct MyArray {
 		ResizeBase();
 	}
 	void ResizeBase() {
-		size_t siz = 1;
-		for (size_t i : len) {
-			siz *= i;
-		}
-		base.resize(siz);
+		base.resize(CalcSize(len));
 	}
 	size_t size() {
 		return base.size();
@@ -57,28 +58,57 @@ struct MyArray {
 		assert(1 == len.size());
 		return base[i];
 	}
-	value_type& operator () (size_t i, size_t j) {
+	/*value_type& operator () (size_t i, size_t j) {
 		assert(2 == len.size());
 		return base[i*len[0] + j];
 	}
 	const value_type& operator () (size_t i, size_t j) const {
 		assert(2 == len.size());
 		return base[i*len[0] + j];
-	}
+	}*/
 
-	size_t position(const vector<size_t>& pos) const {
-		size_t lower_mul = 1, ans = 0;
+	//After return, newLen will become the old len
+	void Expand(const vector<size_t>& newLen) {
+		vector<value_type> tmp = base;
+		base.resize(CalcSize(newLen));
+		CopyArray(base, newLen, tmp, len);
+		len = newLen;
+	}
+	void HandleOutOfBounds(const vector<size_t>& pos) {
+		bool needExpand = false;
+		vector<size_t> newLen = len;
 		for (size_t i = 0; i < pos.size(); ++i) {
-			ans += pos[i] * lower_mul;
-			lower_mul *= len[i];
+			if (pos[i] >= newLen[i]) {
+				needExpand = true;
+				newLen[i] = pos[i] + 1;
+			}
 		}
-		return ans;
+		if (needExpand) {
+			Expand(newLen);
+		}
+	}
+	size_t position(const vector<size_t>& pos) {
+		HandleOutOfBounds(pos);
+		return Position(len, pos);
+	}
+	//Do not handle out of bound
+	size_t position(const vector<size_t>& pos) const {
+		return Position(len, pos);
 	}
 	value_type& operator () (const vector<size_t>& pos) {
 		return base[position(pos)];
 	}
 	const value_type& operator () (const vector<size_t>& pos) const {
 		return base[position(pos)];
+	}
+
+	bool OutOfBound(const vector<size_t>& pos) const {
+		for (size_t i = 0; i < pos.size(); ++i) {
+			if (pos[i] >= len[i]) {
+				return true;
+			}
+		}
+		return false;
 	}
 };
 
@@ -109,5 +139,35 @@ ostream& operator << (ostream& out, const MyArray<value_type>& arr) {
 	return out;
 }
 
+//Only copy [0,n) dimensions, the position of higher dimensions are given by now.
+/*template<typename value_type>
+void CopyArray(MyArray<value_type>& arr, const vector<value_type>& from, const vector<size_t>& from_len, vector<size_t>& now, int n) {
+	if (0 == n) {
+		arr(now) = from_len[position(from_len, now)];
+	} else {
+		for (now[n-1] = 0; now[n-1] < arr.len[n-1]; ++now[n-1]) {
+			CopyArray(arr, now, n-1);
+		}
+	}
+}*/
+
+template<typename value_type>
+void CopyArray(vector<value_type>& to, const vector<size_t>& to_len, const vector<value_type>& from, const vector<size_t>& from_len, vector<size_t>& now, int n) {
+	if (0 == n) {
+		int to_index = Position(to_len, now);
+		ExpandVector(to, to_index);
+		to[to_index] = from[Position(from_len, now)];
+	} else {
+		for (now[n-1] = 0; now[n-1] < from_len[n-1]; ++now[n-1]) {
+			CopyArray(to, to_len, from, from_len, now, n-1);
+		}
+	}
+}
+
+template<typename value_type>
+void CopyArray(vector<value_type>& to, const vector<size_t>& to_len, const vector<value_type>& from, const vector<size_t>& from_len) {
+	vector<size_t>now(to_len.size(), 0);
+	CopyArray(to, to_len, from, from_len, now, to_len.size()-1);
+}
 
 #endif // MYARRAY_H_INCLUDED

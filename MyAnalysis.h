@@ -27,7 +27,7 @@ enum NodeType {
     IS_KEY_WORD,
     IS_STRUCTURE,
     IS_SYS_FUNC,
-    IS_USER_FUNC,
+    IS_USER_FUNC_OR_ARRAY,
 	IS_SEPARATOR,
     IS_NIL
 };
@@ -92,7 +92,8 @@ enum SEPARATOR {
 	LEFT_BRACE,
 	RIGHT_BRACE,
 	SEMICOLON,
-	ENTER
+	ENTER,
+	COMMA
 };
 
 const char* SeparatorName(SEPARATOR separator);
@@ -136,7 +137,7 @@ struct NODE {
         case IS_SYS_FUNC:
             delete (SYS_FUNC*)sth;
             break;
-        case IS_USER_FUNC:
+        case IS_USER_FUNC_OR_ARRAY:
             delete (string*)sth;
             break;
 		case IS_SEPARATOR:
@@ -171,7 +172,7 @@ struct NODE {
         case IS_SYS_FUNC:
             sth = new SYS_FUNC;
             break;
-        case IS_USER_FUNC:
+        case IS_USER_FUNC_OR_ARRAY:
             sth = new string;
             break;
 		case IS_SEPARATOR:
@@ -221,10 +222,10 @@ struct NODE {
     const SYS_FUNC& sys_func() const {
         return *(const SYS_FUNC*)sth;
     }
-    string& user_func() {
+    string& user_func_or_array() {
         return *(string*)sth;
     }
-	const string& user_func() const {
+	const string& user_func_or_array() const {
 		return *(const string*)sth;
 	}
 	SEPARATOR& separator() {
@@ -256,7 +257,7 @@ struct NODE {
         case IS_SYS_FUNC:
             out << SysFuncName(*(SYS_FUNC*)sth);
             break;
-        case IS_USER_FUNC:
+        case IS_USER_FUNC_OR_ARRAY:
             out << *(string*)sth;
             break;
 		case IS_SEPARATOR:
@@ -297,13 +298,15 @@ bool Parsing(NODE*& root, vector<StrExpr>::iterator& now, ostream& info);
 bool Parsing_dfs(NODE*& operand, vector<StrExpr>::iterator& now, bool& finish, ostream& info);
 void Parsing_IS_CONSTANT(NODE*& operand, ERROR_TYPE& error_type, const vector<StrExpr>::iterator& now);
 bool Parsing_IS_OPERATOR(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>::iterator& now,  stack<NODE*>& operator_sta, bool& finish, ostream& info);
-bool Parsing_IS_KEY_WORD(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>::iterator& now, stack<NODE*>& operator_sta, ostream& info);
+bool Parsing_IS_KEY_WORD(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>::iterator& now, ostream& info);
 void Parsing_IS_SEPARATOR(ERROR_TYPE& error_type, const string& name, bool& needReturn, bool& finish, bool& need_output);
+bool Parsing_IS_USER_FUNC_OR_ARRAY(NODE*& operand, vector<StrExpr>::iterator& now, ostream& info);
 
 bool CalcByTree(const NODE* root, unordered_map<string, VARIABLE>& variable_table, ostream& info);
 bool CalcByTree(CONST_OR_VARIABLE& ans, const NODE* root, bool create_variable, unordered_map<string, VARIABLE>& variable_table, ostream& info);
 bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_map<string, VARIABLE>& variable_table, ostream& info);
 bool CalcByTree_IS_STRUCTURE(const NODE* root, unordered_map<string, VARIABLE>& variable_table, ostream& info);
+bool CalcByTree_IS_USER_FUNC_OR_ARRAY(const NODE* root, CONST_OR_VARIABLE& ans, bool create_variable, unordered_map<string, VARIABLE>& variable_table, ostream& info);
 
 extern map<string, OPERATOR> operator_code;
 extern map<OPERATOR, int>priority;

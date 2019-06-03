@@ -42,6 +42,7 @@ struct VALUE {
 		}
 	}*/
 	void del() {
+		if (NULL == val) return;
 		switch (type) {
 		case IS_INTEGER:
 			delete (IntType*)val;
@@ -53,7 +54,7 @@ struct VALUE {
 		val = NULL;
 	}
 	explicit operator bool() {
-		switch(type) {
+		switch (type) {
 		case IS_INTEGER:
 			return (bool)*(IntType*)val;
 		case IS_DOUBLE:
@@ -61,6 +62,16 @@ struct VALUE {
 		}
 		assert(1);
 		return false;
+	}
+	explicit operator size_t() {
+		switch (type) {
+		case IS_INTEGER:
+			return (size_t)(int)*(IntType*)val;
+		case IS_DOUBLE:
+			return (int)*(double*)val;
+		}
+		assert(1);
+		return -1;
 	}
 	VALUE& Copy(const VALUE& rhs) {
 		type = rhs.type;

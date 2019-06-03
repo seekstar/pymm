@@ -11,6 +11,8 @@ map<string, SYS_FUNC> sys_func_code;
 map<string, SEPARATOR> separator_code;
 map<STRUCTURE, int> structureBranches;
 
+//unordered_map<string, int> varNum;
+
 void Init(void){
     operator_code["="] = ASSIGN;
     priority[ASSIGN] = 14;
@@ -108,6 +110,7 @@ void Init(void){
 	separator_code["}"] = RIGHT_BRACE;
 	separator_code[";"] = SEMICOLON;
 	separator_code["\n"] = ENTER;
+	separator_code[","] = COMMA;
 
 	structureBranches[IF] = 3;
 	structureBranches[WHILE] = 2;
@@ -151,8 +154,8 @@ const char* NodeTypeName(NodeType type) {
         return "IS_STRUCTURE";
     case IS_SYS_FUNC:
         return "IS_SYS_FUNC";
-    case IS_USER_FUNC:
-        return "IS_USER_FUNC";
+    case IS_USER_FUNC_OR_ARRAY:
+        return "IS_USER_FUNC_OR_ARRAY";
     case IS_SEPARATOR:
         return"IS_SEPARATOR";
     case IS_NIL:
@@ -264,6 +267,8 @@ const char* SeparatorName(SEPARATOR separator) {
 		return ";";
 	case ENTER:
 		return "<CR>";
+    case COMMA:
+        return ",";
 	}
 	return "ERROR";
 }
@@ -317,7 +322,7 @@ bool LexicalAnalysis(vector<StrExpr>& strExpr, const char* str, ostream& info) {
                    if (IsSysFunc(sth)) {
                         strExpr.push_back(StrExpr{IS_SYS_FUNC, sth});
                    } else {
-                        strExpr.push_back(StrExpr{IS_USER_FUNC, sth});
+                        strExpr.push_back(StrExpr{IS_USER_FUNC_OR_ARRAY, sth});
                    }
                 } else {
                     strExpr.push_back(StrExpr{IS_VARIABLE, sth});
@@ -399,12 +404,15 @@ bool Parsing_dfs(NODE*& operand, vector<StrExpr>::iterator& now, bool& finish, o
             FAIL_THEN_RETURN(Parsing_IS_OPERATOR(operand, error_type, now, operator_sta, needReturn, info));
  			break;
 		case IS_KEY_WORD:
-            FAIL_THEN_RETURN(Parsing_IS_KEY_WORD(operand, error_type, now, operator_sta, info));
+            FAIL_THEN_RETURN(Parsing_IS_KEY_WORD(operand, error_type, now, info));
             needReturn = true;  //Won't be any more sentences.
 			break;
 		case IS_SEPARATOR:
 			Parsing_IS_SEPARATOR(error_type, now->name, needReturn, finish, need_output);
 			break;
+        case IS_USER_FUNC_OR_ARRAY:
+            FAIL_THEN_RETURN(Parsing_IS_USER_FUNC_OR_ARRAY(operand, now, info));
+            break;
 		default:
 		    ErrMsg(info, "No such a node type ", now->type);
 			break;
@@ -526,7 +534,7 @@ bool Parsing_IS_OPERATOR(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>
     return SUCCEED;
 }
 
-bool Parsing_IS_KEY_WORD(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>::iterator& now, stack<NODE*>& operator_sta, ostream& info) {
+bool Parsing_IS_KEY_WORD(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>::iterator& now, ostream& info) {
 	operand = new NODE(IS_STRUCTURE);
 	KEY_WORD code = key_word_code[now->name];
 	bool finish = false;    //Just to deal with compile error
@@ -617,7 +625,32 @@ void Parsing_IS_SEPARATOR(ERROR_TYPE& error_type, const string& name, bool& need
 		needReturn = true;
 		need_output = true;
 		break;
+    case COMMA:
+        needReturn = true;
+        need_output = false;
+        break;
 	}
+}
+
+bool Parsing_IS_USER_FUNC_OR_ARRAY(NODE*& operand, vector<StrExpr>::iterator& now, ostream& info) {
+    operand = new NODE(IS_USER_FUNC_OR_ARRAY);
+    operand->user_func_or_array() = now->name;
+
+    bool finish = false;    //Just to deal with compile error
+    ++now;
+    if (now->name != ")") {
+        ++now;
+        FAIL_THEN_RETURN(Parsing_dfs(operand->child[0], now, finish, info));
+        --now;
+    }
+    NODE* var = operand->child[0];
+    while (now->name != ")") {
+        ++now;
+        FAIL_THEN_RETURN(Parsing_dfs(var->sibling, now, finish, info));
+        //++varNum[operand->user_func_or_array()];
+        --now;
+    }
+    return SUCCEED;
 }
 
 bool CalcByTree(const NODE* root, unordered_map<string, VARIABLE>& variable_table, ostream& info) {
@@ -659,6 +692,9 @@ bool CalcByTree(CONST_OR_VARIABLE& ans, const NODE* root, bool create_variable, 
         break;
     case IS_STRUCTURE:
         CalcByTree_IS_STRUCTURE(root, variable_table, info);
+        break;
+    case IS_USER_FUNC_OR_ARRAY:
+        CalcByTree_IS_USER_FUNC_OR_ARRAY(root, ans, create_variable, variable_table, info);
         break;
     default:
         ErrMsg(info, "No such an operator ", root->op());
@@ -752,7 +788,30 @@ bool CalcByTree_IS_STRUCTURE(const NODE* root, unordered_map<string, VARIABLE>& 
 
     return SUCCEED;
 }
-
+bool CalcByTree_IS_USER_FUNC_OR_ARRAY(const NODE* root, CONST_OR_VARIABLE& ans, bool create_variable, unordered_map<string, VARIABLE>& variable_table, ostream& info) {
+    auto it = variable_table.find(root->user_func_or_array());
+    if (it == variable_table.end()) {   //Is user_func
+        info << "No such a user defined function " << root->user_func_or_array() << endl;
+        return FAIL;
+    } else {        //Is array
+        vector<size_t> pos;
+        NODE* var = root->child[0];
+        while (var) {
+            CalcByTree(ans, var, false, variable_table, info);
+            pos.push_back((size_t)ans);
+            ans.del();
+            var = var->sibling;
+        }
+        ans = CONST_OR_VARIABLE(true, true);
+        if (!create_variable && (it->second).OutOfBound(pos)) {
+            info << "Out of bound for array " << root->user_func_or_array() << endl;
+            return false;
+        } else {
+            ans.val = &(it->second)(pos);
+        }
+    }
+    return SUCCEED;
+}
 
 bool UpdateBraces(stack<char>& braces, const char*& str) {
     for (; *str; ++str) {

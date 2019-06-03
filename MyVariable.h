@@ -14,10 +14,12 @@ using namespace std;
 enum VARIABLE_TYPE {
     IS_VALUE,
     IS_MATRIX,
-    IS_ARRAY
+    IS_ARRAY    //广义表
 };
 
-typedef MyArray<VALUE> ARRAY;
+struct VARIABLE;
+
+typedef MyArray<VARIABLE> ARRAY;
 
 struct VARIABLE {
     VARIABLE_TYPE type;
@@ -51,6 +53,10 @@ struct VARIABLE {
     explicit operator bool() {
 		assert(IS_VALUE == type);
         return (bool)*(VALUE*)val;
+    }
+    explicit operator size_t() {
+        assert(IS_VALUE == type);
+        return (size_t)*(VALUE*)val;
     }
     VARIABLE& Copy(const VARIABLE& rhs) {
         del();
@@ -101,6 +107,22 @@ struct VARIABLE {
 		return *this = *this / rhs;
     }
 
+    void IfValueThenToArray() {
+        if (type == IS_VALUE) {
+            ARRAY* tmp = new ARRAY(1);
+            (*tmp)(0) = *this;
+            val = tmp;
+            type = IS_ARRAY;
+        }
+    }
+    VARIABLE& operator () (const vector<size_t>& pos) {
+        IfValueThenToArray();
+        return (*(ARRAY*)val)(pos);
+    }
+    bool OutOfBound(const vector<size_t>& pos) {
+        IfValueThenToArray();
+        return (*(ARRAY*)val).OutOfBound(pos);
+    }
     void Print(ostream& out) const {
         switch (type) {
         case IS_VALUE:
@@ -134,6 +156,9 @@ struct CONST_OR_VARIABLE{
 
     explicit operator bool() {
         return (bool)*val;
+    }
+    explicit operator size_t() {
+        return (size_t)*val;
     }
     void del() {
         if (!left_value && val) {

@@ -1,5 +1,7 @@
 #include "PrintTree.h"
 
+//extern unordered_map<string, int> varNum;
+
 //Fill the index-th line. Fill until print the last '|'.
 void FillNewLine(MyQueue<MyString>& lines, size_t index, const vector<size_t>& rec_branch) {
 	if (index == lines.size()) {
@@ -50,6 +52,9 @@ int NumOfBranches(const NODE* root) {
 		return numOfOperands[root->op()];
 	case IS_STRUCTURE:
 		return structureBranches[root->structure()];
+	case IS_USER_FUNC_OR_ARRAY:
+		//return varNum[root->user_func_or_array()];
+		return 1;
 	default:
 		assert(1);
 		return -1;
@@ -75,6 +80,9 @@ void PrintBranches(ostream& res, NODE* root, MyQueue<MyString>& lines, vector<si
 		rec_branch.pop_back();
 	//FillNewLine(lines, 0, rec_branch);
 }
+/*void PrintUserFuncOrArray(ostream& res, NODE* root, MyQueue<MyString>& lines, vector<size_t>& rec_branch) {
+
+}*/
 //Do not print the last '\n'
 void PrintTree(ostream& res, NODE* root, MyQueue<MyString>& lines, vector<size_t>& rec_branch) {
 	while (root) {
@@ -106,6 +114,7 @@ void PrintTree(ostream& res, NODE* root, MyQueue<MyString>& lines, vector<size_t
 			break;
 		case IS_OPERATOR:
 		case IS_STRUCTURE:
+		case IS_USER_FUNC_OR_ARRAY:
 			PrintBranches(res, root, lines, rec_branch);
 			break;
 		default:
