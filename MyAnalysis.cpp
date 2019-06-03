@@ -555,10 +555,23 @@ bool Parsing_IS_KEY_WORD(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>
         operand->structure() = WHILE;
         ++now;
         ++now;  //skip '('
-        Parsing_dfs(operand->child[0], now, finish, info);
+        FAIL_THEN_RETURN(Parsing_dfs(operand->child[0], now, finish, info));
         if (now->name == "{")
             ++now;
         FAIL_THEN_RETURN(Parsing(operand->child[1], now, info));
+        //Now "now" points the next sentence.
+        --now;  //Because the for loop will increase it soon
+        break;
+    case FOR_KEY:
+        operand->structure() = FOR;
+        ++now;
+        ++now;  //skip '('
+        FAIL_THEN_RETURN(Parsing_dfs(operand->child[0], now, finish, info));    //Initialize
+        FAIL_THEN_RETURN(Parsing_dfs(operand->child[1], now, finish, info));    //condition control
+        FAIL_THEN_RETURN(Parsing_dfs(operand->child[2], now, finish, info));    //post process
+        if (now->name == "{")
+            ++now;
+        FAIL_THEN_RETURN(Parsing(operand->child[3], now, info));
         //Now "now" points the next sentence.
         --now;  //Because the for loop will increase it soon
         break;
@@ -687,32 +700,41 @@ bool CalcByTree_IS_STRUCTURE(const NODE* root, unordered_map<string, VARIABLE>& 
         } else {
             FAIL_THEN_RETURN(CalcByTree(root->child[2], variable_table, info));
         }
+        condition.del();
         break;
     case WHILE:
         while (1) {
             FAIL_THEN_RETURN(CalcByTree(condition, root->child[0], false, variable_table, info));
             if (!(bool)condition)
                 break;
+            condition.del();
             FAIL_THEN_RETURN(CalcByTree(root->child[1], variable_table, info));
         }
         break;
     case FOR:
+        //condition is used to deal with compile issues
+        FAIL_THEN_RETURN(CalcByTree(condition, root->child[0], false, variable_table, info));
+        condition.del();
         while (1) {
-            FAIL_THEN_RETURN(CalcByTree(condition, root->child[0], false, variable_table, info));
+            FAIL_THEN_RETURN(CalcByTree(condition, root->child[1], false, variable_table, info));
             if (!(bool)condition)
                 break;
-            FAIL_THEN_RETURN(CalcByTree(root->child[1], variable_table, info));
-            FAIL_THEN_RETURN(CalcByTree(root->child[2], variable_table, info));
+            condition.del();
+            FAIL_THEN_RETURN(CalcByTree(root->child[3], variable_table, info));
+            //condition is used to deal with compile issues
+            FAIL_THEN_RETURN(CalcByTree(condition, root->child[2], false, variable_table, info));
+            condition.del();
         }
         break;
     case DO_WHILE:
         do {
+            condition.del();
             FAIL_THEN_RETURN(CalcByTree(root->child[1], variable_table, info));
             FAIL_THEN_RETURN(CalcByTree(condition, root->child[0], false, variable_table, info));
         } while ((bool)condition);
+        condition.del();
         break;
     }
-    condition.del();
 
     return SUCCEED;
 }

@@ -1,7 +1,7 @@
 #ifndef MYFLAGS_H_INCLUDED
 #define MYFLAGS_H_INCLUDED
 
-#define DEBUG 0
+#define DEBUG 1
 
 #define FAIL_THEN_RETURN(x) {if (FAIL == x) return FAIL;}
 

@@ -55,6 +55,7 @@ struct VARIABLE{
             delete (MATRIX*)val;
             break;
         }
+        val = NULL;
     }
     VARIABLE& Copy(const VARIABLE& rhs)
     {
@@ -519,6 +520,7 @@ struct CONST_OR_VARIABLE{
         if (!left_value && val) {
             val->del();
         }
+        val = NULL;
     }
     void Init(bool _vari, bool lv) {
         val = NULL;

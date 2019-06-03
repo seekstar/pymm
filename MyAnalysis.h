@@ -13,7 +13,7 @@
 #include "MyFlags.h"
 //#include "MyStringSTL.h"
 
-#define MAX_CHILD 3
+#define MAX_CHILD 4
 
 using namespace std;
 
