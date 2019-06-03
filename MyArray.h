@@ -77,6 +77,8 @@ struct MyArray {
 	void HandleOutOfBounds(const vector<size_t>& pos) {
 		bool needExpand = false;
 		vector<size_t> newLen = len;
+		if (newLen.size() < pos.size())
+			newLen.resize(pos.size());
 		for (size_t i = 0; i < pos.size(); ++i) {
 			if (pos[i] >= newLen[i]) {
 				needExpand = true;

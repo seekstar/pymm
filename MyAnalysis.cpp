@@ -99,6 +99,7 @@ void Init(void){
     symbols.insert('?');
     symbols.insert(':');
     symbols.insert(';');
+    symbols.insert(',');
 
     key_word_code["if"] = IF_KEY;
     key_word_code["else"] = ELSE_KEY;
@@ -694,7 +695,7 @@ bool CalcByTree(CONST_OR_VARIABLE& ans, const NODE* root, bool create_variable, 
         CalcByTree_IS_STRUCTURE(root, variable_table, info);
         break;
     case IS_USER_FUNC_OR_ARRAY:
-        CalcByTree_IS_USER_FUNC_OR_ARRAY(root, ans, create_variable, variable_table, info);
+        FAIL_THEN_RETURN(CalcByTree_IS_USER_FUNC_OR_ARRAY(root, ans, create_variable, variable_table, info));
         break;
     default:
         ErrMsg(info, "No such an operator ", root->op());
@@ -805,7 +806,7 @@ bool CalcByTree_IS_USER_FUNC_OR_ARRAY(const NODE* root, CONST_OR_VARIABLE& ans, 
         ans = CONST_OR_VARIABLE(true, true);
         if (!create_variable && (it->second).OutOfBound(pos)) {
             info << "Out of bound for array " << root->user_func_or_array() << endl;
-            return false;
+            return FAIL;
         } else {
             ans.val = &(it->second)(pos);
         }
