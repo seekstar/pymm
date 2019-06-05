@@ -769,3 +769,137 @@
 1559574330 /home/searchstar/git/pymm/MyTrivialFunc.h
 	<vector>
 
+1559612717 source:d:\pymm\main.cpp
+	<iostream>
+	"MyPyMinusMinus.h"
+
+1559621087 d:\pymm\mypyminusminus.h
+	<vector>
+	<unordered_map>
+	"MyAnalysis.h"
+	"PrintTree.h"
+
+1559611425 d:\pymm\myanalysis.h
+	<ctype.h>
+	<map>
+	<set>
+	<stack>
+	<unordered_map>
+	"MyVariable.h"
+	"MyString.h"
+	"MyError.h"
+	"MyFlags.h"
+
+1559610153 d:\pymm\myvariable.h
+	<assert.h>
+	"MyFlags.h"
+	"MyArray.h"
+	"MyValue.h"
+
+1559620138 d:\pymm\myflags.h
+
+1559586453 d:\pymm\myarray.h
+	<vector>
+	<assert.h>
+	<ostream>
+	"MyTrivialFunc.h"
+
+1559574330 d:\pymm\mytrivialfunc.h
+	<vector>
+
+1559619050 d:\pymm\myvalue.h
+	<cstdio>
+	<cmath>
+	"MyInteger.h"
+	"MyMatrix.h"
+	"MyDouble.h"
+
+1559034154 d:\pymm\myinteger.h
+	"SignedBigInt.h"
+	"MyFlags.h"
+
+1559611327 d:\pymm\signedbigint.h
+	<cstdlib>
+	"UnsignedBigInt.h"
+
+1559611666 d:\pymm\unsignedbigint.h
+	<iostream>
+	<iomanip>
+	<vector>
+	<cstdio>
+	<cassert>
+	<cstring>
+	<sstream>
+	<string>
+	"MyString.h"
+
+1559469422 d:\pymm\mystring.h
+	<ctype.h>
+	<string>
+
+1558755208 d:\pymm\mymatrix.h
+
+1559610352 d:\pymm\myerror.h
+	"MyString.h"
+	<ostream>
+
+1559457062 d:\pymm\printtree.h
+	<algorithm>
+	"MyAnalysis.h"
+	"MyQueue.h"
+	"MyStringSTL.h"
+
+1559183191 d:\pymm\myqueue.h
+	"MyArithmetic.h"
+
+1559036854 d:\pymm\myarithmetic.h
+
+1559141311 d:\pymm\mystringstl.h
+	<ostream>
+	"MyVector.h"
+
+1559140593 d:\pymm\myvector.h
+	<algorithm>
+	<utility>
+
+1559583215 source:d:\pymm\myarray.cpp
+	"MyArray.h"
+
+1559391342 source:d:\pymm\myerror.cpp
+	"MyError.h"
+
+1559046466 source:d:\pymm\myinteger.cpp
+	"MyInteger.h"
+
+1559469430 source:d:\pymm\mystring.cpp
+	"MyString.h"
+
+1559139778 source:d:\pymm\mystringstl.cpp
+	"MyStringSTL.h"
+
+1559618038 source:d:\pymm\myvalue.cpp
+	"MyValue.h"
+
+1559586897 source:d:\pymm\myvariable.cpp
+	"MyVariable.h"
+
+1559576645 source:d:\pymm\printtree.cpp
+	"PrintTree.h"
+
+1559591714 source:d:\pymm\signedbigint.cpp
+	"SignedBigInt.h"
+
+1559611666 source:d:\pymm\unsignedbigint.cpp
+	"UnsignedBigInt.h"
+
+1559619698 source:d:\pymm\myanalysis.cpp
+	"MyAnalysis.h"
+	"PrintTree.h"
+
+1559618830 d:\pymm\mydouble.h
+	<cstdio>
+	<cmath>
+
+1559618830 source:d:\pymm\mydouble.cpp
+	"MyDouble.h"
+

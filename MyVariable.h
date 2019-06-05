@@ -139,6 +139,22 @@ struct VARIABLE {
 		assert(type == IS_VALUE && rhs.type == IS_VALUE);
         return VARIABLE(*(VALUE*)val >= *(VALUE*)rhs.val);
     }
+    VARIABLE operator == (const VARIABLE& rhs) const {
+		assert(type == IS_VALUE && rhs.type == IS_VALUE);
+        return VARIABLE(*(VALUE*)val == *(VALUE*)rhs.val);
+    }
+    VARIABLE operator != (const VARIABLE& rhs) const {
+		assert(type == IS_VALUE && rhs.type == IS_VALUE);
+        return VARIABLE(*(VALUE*)val != *(VALUE*)rhs.val);
+    }
+    VARIABLE operator && (const VARIABLE& rhs) const {
+		assert(type == IS_VALUE && rhs.type == IS_VALUE);
+        return VARIABLE(*(VALUE*)val && *(VALUE*)rhs.val);
+    }
+    VARIABLE operator || (const VARIABLE& rhs) const {
+		assert(type == IS_VALUE && rhs.type == IS_VALUE);
+        return VARIABLE(*(VALUE*)val || *(VALUE*)rhs.val);
+    }
 
     void IfValueThenToArray() {
         if (type == IS_VALUE) {
@@ -298,6 +314,30 @@ struct CONST_OR_VARIABLE{
 		static CONST_OR_VARIABLE ans;
 		ans.Init_new(false, false);
 		*ans.val = *val >= *rhs.val;
+		return ans;
+	}
+    CONST_OR_VARIABLE operator == (const CONST_OR_VARIABLE& rhs) const {
+		static CONST_OR_VARIABLE ans;
+		ans.Init_new(false, false);
+		*ans.val = *val == *rhs.val;
+		return ans;
+    }
+    CONST_OR_VARIABLE operator != (const CONST_OR_VARIABLE& rhs) const {
+		static CONST_OR_VARIABLE ans;
+		ans.Init_new(false, false);
+		*ans.val = *val == *rhs.val;
+		return ans;
+    }
+    CONST_OR_VARIABLE operator && (const CONST_OR_VARIABLE& rhs) const {
+		static CONST_OR_VARIABLE ans;
+		ans.Init_new(false, false);
+		*ans.val = *val && *rhs.val;
+		return ans;
+    }
+    CONST_OR_VARIABLE operator || (const CONST_OR_VARIABLE& rhs) const {
+		static CONST_OR_VARIABLE ans;
+		ans.Init_new(false, false);
+		*ans.val = *val || *rhs.val;
 		return ans;
 	}
 

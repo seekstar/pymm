@@ -6,6 +6,7 @@
 
 #include "MyInteger.h"
 #include "MyMatrix.h"
+#include "MyDouble.h"
 
 //fundamental type
 enum VAL_TYPE{
@@ -628,6 +629,184 @@ struct VALUE {
 			break;
 		case IS_BOOL:
 			assert(1);
+			break;
+		}
+		return ans;
+	}
+	VALUE operator == (const VALUE& rhs) {
+		static VALUE ans;
+		ans.type = IS_BOOL;
+		ans.val = new bool;
+		switch (type) {
+		case IS_INTEGER:
+			switch (rhs.type) {
+			case IS_INTEGER:
+				*(bool*)ans.val = *(IntType*)val == *(IntType*)rhs.val;
+				break;
+			case IS_DOUBLE:
+				*(bool*)ans.val = Equal((double)*(IntType*)val, *(double*)rhs.val);
+				break;
+			case IS_BOOL:
+				*(bool*)ans.val = *(IntType*)val == (IntType)(int)*(bool*)rhs.val;
+				break;
+			}
+			break;
+		case IS_DOUBLE:
+			switch (rhs.type) {
+			case IS_INTEGER:
+				*(bool*)ans.val = Equal(*(double*)val, (double)*(IntType*)rhs.val);
+				break;
+			case IS_DOUBLE:
+				*(bool*)ans.val = Equal(*(double*)val, *(double*)rhs.val);
+				break;
+			case IS_BOOL:
+				*(bool*)ans.val = Equal(*(double*)val, (double)(int)*(bool*)rhs.val);
+				break;
+			}
+			break;
+		case IS_BOOL:
+			switch (rhs.type) {
+            case IS_INTEGER:
+                *(bool*)ans.val = *(bool*)val == (bool)*(IntType*)rhs.val;
+                break;
+            case IS_DOUBLE:
+                *(bool*)ans.val = *(bool*)val == (bool)*(double*)rhs.val;
+                break;
+            case IS_BOOL:
+                *(bool*)ans.val = *(bool*)val == *(bool*)rhs.val;
+                break;
+			}
+			break;
+		}
+		return ans;
+	}
+	VALUE operator != (const VALUE& rhs) {
+		static VALUE ans;
+		ans.type = IS_BOOL;
+		ans.val = new bool;
+		switch (type) {
+		case IS_INTEGER:
+			switch (rhs.type) {
+			case IS_INTEGER:
+				*(bool*)ans.val = *(IntType*)val != *(IntType*)rhs.val;
+				break;
+			case IS_DOUBLE:
+				*(bool*)ans.val = NotEqual((double)*(IntType*)val, *(double*)rhs.val);
+				break;
+			case IS_BOOL:
+				assert(1);
+				break;
+			}
+			break;
+		case IS_DOUBLE:
+			switch (rhs.type) {
+			case IS_INTEGER:
+				*(bool*)ans.val = NotEqual(*(double*)val, (double)*(IntType*)rhs.val);
+				break;
+			case IS_DOUBLE:
+				*(bool*)ans.val = NotEqual(*(double*)val, *(double*)rhs.val);
+				break;
+			case IS_BOOL:
+				assert(1);
+				break;
+			}
+			break;
+		case IS_BOOL:
+			assert(1);
+			break;
+		}
+		return ans;
+	}
+	VALUE operator && (const VALUE& rhs) {
+		static VALUE ans;
+		ans.type = IS_BOOL;
+		ans.val = new bool;
+		switch (type) {
+		case IS_INTEGER:
+			switch (rhs.type) {
+			case IS_INTEGER:
+				*(bool*)ans.val = (bool)*(IntType*)val && (bool)*(IntType*)rhs.val;
+				break;
+			case IS_DOUBLE:
+				*(bool*)ans.val = (bool)*(IntType*)val && *(bool*)rhs.val;
+				break;
+			case IS_BOOL:
+				*(bool*)ans.val = (bool)*(IntType*)val && *(bool*)rhs.val;
+				break;
+			}
+			break;
+		case IS_DOUBLE:
+			switch (rhs.type) {
+			case IS_INTEGER:
+				*(bool*)ans.val = NotZero(*(double*)val) && (bool)*(IntType*)rhs.val;
+				break;
+			case IS_DOUBLE:
+				*(bool*)ans.val = NotZero(*(double*)val) && NotZero(*(double*)rhs.val);
+				break;
+			case IS_BOOL:
+				*(bool*)ans.val = (bool)*(double*)val && *(bool*)rhs.val;
+				break;
+			}
+			break;
+		case IS_BOOL:
+			switch (rhs.type) {
+            case IS_INTEGER:
+                *(bool*)ans.val = *(bool*)val && (bool)*(IntType*)rhs.val;
+                break;
+            case IS_DOUBLE:
+                *(bool*)ans.val = *(bool*)val && NotZero(*(double*)rhs.val);
+                break;
+            case IS_BOOL:
+                *(bool*)ans.val = *(bool*)val && *(bool*)rhs.val;
+                break;
+			}
+			break;
+		}
+		return ans;
+	}
+	VALUE operator || (const VALUE& rhs) {
+		static VALUE ans;
+		ans.type = IS_BOOL;
+		ans.val = new bool;
+		switch (type) {
+		case IS_INTEGER:
+			switch (rhs.type) {
+			case IS_INTEGER:
+				*(bool*)ans.val = *(IntType*)val || *(IntType*)rhs.val;
+				break;
+			case IS_DOUBLE:
+				*(bool*)ans.val = (double)*(IntType*)val || *(double*)rhs.val;
+				break;
+			case IS_BOOL:
+				*(bool*)ans.val = (bool)*(IntType*)val || *(bool*)rhs.val;
+				break;
+			}
+			break;
+		case IS_DOUBLE:
+			switch (rhs.type) {
+			case IS_INTEGER:
+				*(bool*)ans.val = *(double*)val || (double)*(IntType*)rhs.val;
+				break;
+			case IS_DOUBLE:
+				*(bool*)ans.val = *(double*)val || *(double*)rhs.val;
+				break;
+			case IS_BOOL:
+				*(bool*)ans.val = NotZero(*(double*)val) || *(bool*)rhs.val;
+				break;
+			}
+			break;
+		case IS_BOOL:
+			switch (rhs.type) {
+            case IS_INTEGER:
+                *(bool*)ans.val = (bool)*(IntType*)val || *(bool*)rhs.val;
+                break;
+            case IS_DOUBLE:
+                *(bool*)ans.val = *(bool*)val || NotZero(*(double*)rhs.val);
+                break;
+            case IS_BOOL:
+                *(bool*)ans.val = *(bool*)val || *(bool*)rhs.val;
+                break;
+			}
 			break;
 		}
 		return ans;

@@ -72,6 +72,9 @@ struct SignedBigInt
 	bool operator >= (const SignedBigInt& b) const {
 		return b <= *this;
 	}
+	bool operator != (const SignedBigInt& b) const {
+        return !(*this == b);
+	}
 
 	bool operator == (int b) const
 	{

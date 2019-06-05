@@ -143,3 +143,18 @@ a=-9;while(a){a=a+1}
 
 a=-9;while(a){a=a+1;b=a*3}
 
+
+n = 100
+for (i=2; i < 100; i=i+1) {
+	found = 1;
+	for (j = 2; j * j <= i; j=j+1) {
+		if (i % j == 0) {
+			found = 0;
+		}
+	}
+	if (found) {
+		i
+	}
+}
+
+			

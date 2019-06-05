@@ -20,7 +20,15 @@ struct PYMM{
         Init();
     }
 
-    bool Input(const char* input, ostream& info){
+    bool Input(const char* input, ostream& info) {
+        if (FAIL == Input2(input, info)) {
+            stored_input.clear();
+            return FAIL;
+        } else {
+            return SUCCEED;
+        }
+    }
+    bool Input2(const char* input, ostream& info){
         vector<StrExpr> strExpr;
         NODE* root = NULL;
 
@@ -47,9 +55,9 @@ struct PYMM{
         auto now = strExpr.begin();
         FAIL_THEN_RETURN(Parsing(root, now, info));
 
-#if DEBUG
-        PrintTree(cerr, root);
-#endif
+//#if DEBUG
+        //PrintTree(cerr, root);
+//#endif
 
         FAIL_THEN_RETURN(CalcByTree(root, variable_table, info));
 

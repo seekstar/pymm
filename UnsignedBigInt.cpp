@@ -17,27 +17,6 @@ bool operator < (const int& a, const UnsignedBigInt& b)
     return b.s.size() == 1 ? (a < b.s[0]) : !b.s.empty();
 }
 
-template<typename T1, typename T2>
-bool operator != (const T1& a, const T2& b)
-{
-    return !(a == b);
-}
-template<typename T1, typename T2>
-bool operator > (const T1& a, const T2& b)
-{
-    return b < a;
-}
-template<typename T1, typename T2>
-bool operator <= (const T1& a, const T2& b)
-{
-    return !(b < a);
-}
-template<typename T1, typename T2>
-bool operator >= (const T1& a, const T2& b)
-{
-    return !(a < b);
-}
-
 UnsignedBigInt sqrt(const UnsignedBigInt& x, int m)
 {
     UnsignedBigInt x0;

@@ -49,36 +49,6 @@ void Init(void){
     numOfOperands[MINUS] = 1;
     associative[MINUS] = RIGHT_ASSOCIATIVE;
 
-    operator_code["<"] = LESS;
-    priority[LESS] = 6;
-    numOfOperands[LESS] = 2;
-    associative[LESS] = LEFT_ASSOCIATIVE;
-
-    operator_code["<="] = LESS_EQ;
-    priority[LESS_EQ] = 6;
-    numOfOperands[LESS_EQ] = 2;
-    associative[LESS_EQ] = LEFT_ASSOCIATIVE;
-
-    operator_code[">"] = GREATER;
-    priority[GREATER] = 6;
-    numOfOperands[GREATER] = 2;
-    associative[GREATER] = LEFT_ASSOCIATIVE;
-
-    operator_code[">="] = GREATER_EQ;
-    priority[GREATER_EQ] = 6;
-    numOfOperands[GREATER_EQ] = 2;
-    associative[GREATER_EQ] = LEFT_ASSOCIATIVE;
-
-    operator_code["("] = LEFT_PARENTHESIS;
-    priority[LEFT_PARENTHESIS] = 1;
-    numOfOperands[LEFT_PARENTHESIS] = 0;
-    associative[LEFT_PARENTHESIS] = LEFT_ASSOCIATIVE;
-
-    operator_code[")"] = RIGHT_PARENTHESIS;
-    priority[RIGHT_PARENTHESIS] = 1;
-    numOfOperands[RIGHT_PARENTHESIS] = 0;
-    associative[RIGHT_PARENTHESIS] = LEFT_ASSOCIATIVE;
-
     operator_code["+="] = ADD_EQ;
     priority[ADD_EQ] = 14;
     numOfOperands[ADD_EQ] = 2;
@@ -104,6 +74,72 @@ void Init(void){
     numOfOperands[MODULUS_EQ] = 2;
     associative[MODULUS_EQ] = RIGHT_ASSOCIATIVE;
 
+
+    operator_code["("] = LEFT_PARENTHESIS;
+    priority[LEFT_PARENTHESIS] = 1;
+    numOfOperands[LEFT_PARENTHESIS] = 0;
+    associative[LEFT_PARENTHESIS] = LEFT_ASSOCIATIVE;
+
+    operator_code[")"] = RIGHT_PARENTHESIS;
+    priority[RIGHT_PARENTHESIS] = 1;
+    numOfOperands[RIGHT_PARENTHESIS] = 0;
+    associative[RIGHT_PARENTHESIS] = LEFT_ASSOCIATIVE;
+
+
+    operator_code["<"] = LESS;
+    priority[LESS] = 6;
+    numOfOperands[LESS] = 2;
+    associative[LESS] = LEFT_ASSOCIATIVE;
+
+    operator_code["<="] = LESS_EQ;
+    priority[LESS_EQ] = 6;
+    numOfOperands[LESS_EQ] = 2;
+    associative[LESS_EQ] = LEFT_ASSOCIATIVE;
+
+    operator_code[">"] = GREATER;
+    priority[GREATER] = 6;
+    numOfOperands[GREATER] = 2;
+    associative[GREATER] = LEFT_ASSOCIATIVE;
+
+    operator_code[">="] = GREATER_EQ;
+    priority[GREATER_EQ] = 6;
+    numOfOperands[GREATER_EQ] = 2;
+    associative[GREATER_EQ] = LEFT_ASSOCIATIVE;
+
+    operator_code["=="] = EQUAL;
+    priority[EQUAL] = 7;
+    numOfOperands[EQUAL] = 2;
+    associative[EQUAL] = LEFT_ASSOCIATIVE;
+
+    operator_code["!="] = NOT_EQUAL;
+    priority[NOT_EQUAL] = 7;
+    numOfOperands[NOT_EQUAL] = 2;
+    associative[NOT_EQUAL] = LEFT_ASSOCIATIVE;
+
+    operator_code["&&"] = AND;
+    priority[AND] = 11;
+    numOfOperands[AND] = 2;
+    associative[AND] = LEFT_ASSOCIATIVE;
+
+    operator_code["||"] = OR;
+    priority[OR] = 12;
+    numOfOperands[OR] = 2;
+    associative[OR] = LEFT_ASSOCIATIVE;
+
+    operator_code["!"] = NOT;
+    priority[NOT] = 12;
+    numOfOperands[NOT] = 2;
+    associative[NOT] = LEFT_ASSOCIATIVE;
+
+    operator_code["&"] = BIT_AND;
+    priority[BIT_AND] = 8;
+    numOfOperands[BIT_AND] = 2;
+    associative[BIT_AND] = LEFT_ASSOCIATIVE;
+
+    operator_code["|"] = BIT_OR;
+    priority[BIT_OR] = 10;
+    numOfOperands[BIT_OR] = 2;
+    associative[BIT_OR] = LEFT_ASSOCIATIVE;
 
     symbols.insert('=');
     symbols.insert('+');
@@ -141,7 +177,7 @@ void Init(void){
 
 	structureBranches[IF] = 3;
 	structureBranches[WHILE] = 2;
-	structureBranches[FOR] = 3;
+	structureBranches[FOR] = 4;
 	structureBranches[DO_WHILE] = 2;
 }
 
@@ -228,6 +264,14 @@ const char* OperatorName(OPERATOR op)
         return "(>)";
     case GREATER_EQ:
         return "(>=)";
+    case EQUAL:
+        return "==";
+    case NOT_EQUAL:
+        return "!=";
+    case AND:
+        return "&&";
+    case OR:
+        return "||";
     case LEFT_PARENTHESIS:
         return "(";
     case RIGHT_PARENTHESIS:
@@ -371,7 +415,7 @@ bool LexicalAnalysis(vector<StrExpr>& strExpr, const char* str, ostream& info) {
 				sth.pop_back();
 				--str;
 				if (sth.empty()) {
-					info << "Unknown chracter " << *str << '\n';
+					info << "Unknown symbol " << *str << '\n';
        	        	status = FAIL;
                 	break;
 				}
@@ -724,7 +768,7 @@ bool CalcByTree(CONST_OR_VARIABLE& ans, const NODE* root, bool create_variable, 
         FAIL_THEN_RETURN(CalcByTree_IS_USER_FUNC_OR_ARRAY(root, ans, create_variable, variable_table, info));
         break;
     default:
-        ErrMsg(info, "No such an operator ", root->op());
+        assert(1);
         break;
     }
     return result;
@@ -812,7 +856,26 @@ bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_
         FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
         ans = ans1 >= ans2;
         break;
-
+    case EQUAL:
+        FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
+        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
+        ans = ans1 == ans2;
+        break;
+    case NOT_EQUAL:
+        FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
+        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
+        ans = ans1 != ans2;
+        break;
+    case AND:
+        FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
+        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
+        ans = ans1 && ans2;
+        break;
+    case OR:
+        FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
+        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
+        ans = ans1 || ans2;
+        break;
     default:
         ErrMsg(info, "No such an operator ", root->op());
         break;
@@ -829,7 +892,9 @@ bool CalcByTree_IS_STRUCTURE(const NODE* root, unordered_map<string, VARIABLE>& 
         if ((bool)condition) {
             FAIL_THEN_RETURN(CalcByTree(root->child[1], variable_table, info));
         } else {
-            FAIL_THEN_RETURN(CalcByTree(root->child[2], variable_table, info));
+            if (root->child[2]) {
+                FAIL_THEN_RETURN(CalcByTree(root->child[2], variable_table, info));
+            }
         }
         condition.del();
         break;

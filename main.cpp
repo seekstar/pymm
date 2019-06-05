@@ -44,7 +44,11 @@ int main()
 
     //in = "a=3;a+=4";
 
-    in = "for(i=0;i<10;i=i+1){i}";
+    //in = "for(i=0;i<10;i=i+1){i}";
+
+    //in = "1&&2";
+
+    in = "n = 100\nfor (i=2; i < 100; i=i+1) {\nfound = 1;\nfor (j = 2; j * j <= i; j=j+1) {\nif (i % j == 0) {\nfound = 0;\n}\n}\n	if (found) {\n	i\n	}\n}\n";
 
     pymm.Input(in.c_str(), info);
     cout << "-------------\n" << info.str();

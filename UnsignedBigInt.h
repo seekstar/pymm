@@ -22,18 +22,6 @@ UnsignedBigInt operator + (LL a, const UnsignedBigInt& b);
 UnsignedBigInt operator * (int a, const UnsignedBigInt& b);
 bool operator < (const int& a, const UnsignedBigInt& b);
 
-template<typename T1, typename T2>
-bool operator != (const T1& a, const T2& b);
-
-template<typename T1, typename T2>
-bool operator > (const T1& a, const T2& b);
-
-template<typename T1, typename T2>
-bool operator <= (const T1& a, const T2& b);
-
-template<typename T1, typename T2>
-bool operator >= (const T1& a, const T2& b);
-
 UnsignedBigInt sqrt(const UnsignedBigInt& x, int m);
 
 const long long tens[] = {1LL,10LL,100LL,1000LL,10000LL,100000LL,1000000LL,10000000LL,100000000LL,1000000000LL};
@@ -313,6 +301,15 @@ struct UnsignedBigInt
         return s.size() == 1 ? (s[1] < b) : (s.size() ? 0 : b != 0);
     }
     friend bool operator > (const int b, const UnsignedBigInt& obj);
+    bool operator > (const int b) const {
+        return b < *this;
+    }
+    bool operator <= (const int b) const {
+        return *this < b || *this == b;
+    }
+    bool operator >= (const int b) const {
+        return *this > b || *this == b;
+    }
 
     UnsignedBigInt& operator -= (const UnsignedBigInt& b)
     {
