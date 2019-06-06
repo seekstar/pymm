@@ -867,14 +867,18 @@ bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_
         ans = ans1 != ans2;
         break;
     case AND:
-        FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
-        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
-        ans = ans1 && ans2;
+        FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
+		if ((bool)ans) {
+			ans.del();
+        	FAIL_THEN_RETURN(CalcByTree(ans, root->child[1], false, variable_table, info));
+		}
         break;
     case OR:
-        FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
-        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
-        ans = ans1 || ans2;
+        FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
+		if (!(bool)ans) {
+			ans.del();
+        	FAIL_THEN_RETURN(CalcByTree(ans, root->child[1], false, variable_table, info));
+		}
         break;
     default:
         ErrMsg(info, "No such an operator ", root->op());
