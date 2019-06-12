@@ -37,6 +37,7 @@ string NodeType2string(NodeType type);
 enum OPERATOR {
     NIL,
     ASSIGN,
+
     ADD,
     ADD_EQ,
     SUB,
@@ -48,17 +49,25 @@ enum OPERATOR {
     MODULUS,
     MODULUS_EQ,
     MINUS,
+    INC_FRONT,
+    DEC_FRONT,
+    INC_BACK,
+    DEC_BACK,
+
     LESS,
     LESS_EQ,
     GREATER,
     GREATER_EQ,
     EQUAL,
     NOT_EQUAL,
+
     AND,
     OR,
     NOT,
+
     BIT_AND,
     BIT_OR,
+    
     LEFT_PARENTHESIS,
     RIGHT_PARENTHESIS,
     //LEFT_BRACE,

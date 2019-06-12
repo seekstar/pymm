@@ -370,7 +370,7 @@ void PopAllOperators(stack<NODE*>& operator_sta, NODE*& operand) {
 bool LexicalAnalysis(vector<StrExpr>& strExpr, const char* str, ostream& info) {
     string sth;
     bool status = SUCCEED;
-    for (; *str;) {
+    while (*str) {
         sth.clear();
 		SkipSpaceExceptEnter(str);
 		if (*str == '\n') {
@@ -591,11 +591,10 @@ bool Parsing_IS_OPERATOR(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>
                (priority[op] == priority[top_op] && associative[op] == RIGHT_ASSOCIATIVE))
             {
                 break;
-            } else {
-                operator_sta.top()->child[numOfOperands[top_op]-1] = operand;
-                operand = operator_sta.top();
-                operator_sta.pop();
             }
+            operator_sta.top()->child[numOfOperands[top_op]-1] = operand;
+            operand = operator_sta.top();
+            operator_sta.pop();
         }
         operator_sta.push(OperandBecomeLeftChild(op, operand));
         break;
@@ -834,6 +833,10 @@ bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_
         FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
         FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
         ans %= ans2;
+        break;
+    case MINUS:
+        FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
+        ans = -ans;
         break;
 
     case LESS:

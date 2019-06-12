@@ -298,6 +298,27 @@ struct VALUE {
         }
 		return ans;
 	}
+	VALUE operator - (void) const {
+		static VALUE ans;
+		switch (type) {
+		case IS_INTEGER:
+			ans.type = IS_INTEGER;
+			ans.val = new IntType;
+			*(IntType*)ans.val = -*(IntType*)val;
+			break;
+		case IS_DOUBLE:
+			ans.type = IS_DOUBLE;
+			ans.val = new double;
+			*(double*)ans.val = -*(double*)val;
+			break;
+		case IS_BOOL:
+			ans.type = IS_BOOL;
+			ans.val = new bool;
+			*(bool*)ans.val = -*(bool*)val;
+			break;
+		}
+		return ans;
+	}
 
 	VALUE& operator += (const VALUE& rhs) {
 		switch (type) {

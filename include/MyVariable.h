@@ -28,6 +28,7 @@ struct VARIABLE {
     VARIABLE() {
         val = NULL;
     }
+    //Construct the variable using v.val
 	VARIABLE(const VALUE& v) {
 		type = IS_VALUE;
 		val = new VALUE(v);
@@ -95,6 +96,10 @@ struct VARIABLE {
     VARIABLE operator % (const VARIABLE& rhs) const {
 		assert(type == IS_VALUE && rhs.type == IS_VALUE);
         return VARIABLE(*(VALUE*)val % *(VALUE*)rhs.val);
+    }
+    VARIABLE operator - (void) {
+        assert(type == IS_VALUE);
+        return VARIABLE(-*(VALUE*)val);
     }
 
     VARIABLE operator += (const VARIABLE& rhs) {
@@ -265,6 +270,12 @@ struct CONST_OR_VARIABLE{
 		*ans.val = *val % *rhs.val;
 		return ans;
 	}
+    CONST_OR_VARIABLE operator - (void) const {
+        static CONST_OR_VARIABLE ans;
+        ans.Init_new(false, false);
+        *ans.val = -*val;
+        return ans;
+    }
 
     CONST_OR_VARIABLE& operator += (const CONST_OR_VARIABLE& rhs) {
         assert(left_value && vari);

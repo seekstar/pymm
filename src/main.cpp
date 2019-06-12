@@ -48,8 +48,9 @@ int main()
 
     //in = "1&&2";
 
-    in = "n = 100\nfor (i=2; i < 100; i=i+1) {\nfound = 1;\nfor (j = 2; j * j <= i; j=j+1) {\nif (i % j == 0) {\nfound = 0;\n}\n}\n	if (found) {\n	i\n	}\n}\n";
+    //in = "n = 100\nfor (i=2; i < 100; i=i+1) {\nfound = 1;\nfor (j = 2; j * j <= i; j=j+1) {\nif (i % j == 0) {\nfound = 0;\n}\n}\n	if (found) {\n	i\n	}\n}\n";
 
+    in = "-2";
     pymm.Input(in.c_str(), info);
     cout << "-------------\n" << info.str();
 
