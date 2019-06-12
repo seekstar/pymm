@@ -16,11 +16,6 @@
 !*.gitignore.swp
 !*.md
 
-#codeblocks
-!*.cbp
-!*.depend
-!*.layout
-
 #matlab
 !*.m
 
@@ -39,3 +34,5 @@
 #linux
 !*.sh
 
+#pymm
+!*.pymm
