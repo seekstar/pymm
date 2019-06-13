@@ -77,6 +77,10 @@ struct VARIABLE {
         }
         return *this;
     }
+    void ToBool() {
+        assert(IS_VALUE == type);
+        ((VALUE*)val)->ChangeType(IS_BOOL);
+    }
     VARIABLE operator + (const VARIABLE& rhs) const {
 		assert(type == IS_VALUE && rhs.type == IS_VALUE);
         return VARIABLE(*(const VALUE*)val + *(const VALUE*)rhs.val);
@@ -162,14 +166,6 @@ struct VARIABLE {
 		assert(type == IS_VALUE && rhs.type == IS_VALUE);
         return VARIABLE(*(VALUE*)val != *(VALUE*)rhs.val);
     }
-    VARIABLE operator && (const VARIABLE& rhs) const {
-		assert(type == IS_VALUE && rhs.type == IS_VALUE);
-        return VARIABLE(*(VALUE*)val && *(VALUE*)rhs.val);
-    }
-    VARIABLE operator || (const VARIABLE& rhs) const {
-		assert(type == IS_VALUE && rhs.type == IS_VALUE);
-        return VARIABLE(*(VALUE*)val || *(VALUE*)rhs.val);
-    }
 
     void IfValueThenToArray() {
         if (type == IS_VALUE) {
@@ -247,6 +243,10 @@ struct CONST_OR_VARIABLE{
     void NewRightVal(const CONST_OR_VARIABLE& rhs) {
         Init_new(false, false);
         Copy(rhs);
+    }
+    void ToBool() {
+        left_value = vari = false;
+        val->ToBool();
     }
     CONST_OR_VARIABLE operator + (const CONST_OR_VARIABLE& rhs) const {
         static CONST_OR_VARIABLE ans;
@@ -334,6 +334,9 @@ struct CONST_OR_VARIABLE{
         --*val;
         return *this;
     }
+    CONST_OR_VARIABLE fra_div(const CONST_OR_VARIABLE& rhs) const {
+        
+    }
 
 	CONST_OR_VARIABLE operator < (const CONST_OR_VARIABLE& rhs) const {
 		static CONST_OR_VARIABLE ans;
@@ -371,18 +374,6 @@ struct CONST_OR_VARIABLE{
 		*ans.val = *val == *rhs.val;
 		return ans;
     }
-    CONST_OR_VARIABLE operator && (const CONST_OR_VARIABLE& rhs) const {
-		static CONST_OR_VARIABLE ans;
-		ans.Init_new(false, false);
-		*ans.val = *val && *rhs.val;
-		return ans;
-    }
-    CONST_OR_VARIABLE operator || (const CONST_OR_VARIABLE& rhs) const {
-		static CONST_OR_VARIABLE ans;
-		ans.Init_new(false, false);
-		*ans.val = *val || *rhs.val;
-		return ans;
-	}
 
     void Print(ostream& out)
     {

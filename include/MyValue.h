@@ -7,12 +7,14 @@
 #include "MyInteger.h"
 #include "MyMatrix.h"
 #include "MyDouble.h"
+#include "fraction.h"
 
 //fundamental type
 enum VAL_TYPE{
     IS_INTEGER,
     IS_DOUBLE,
-    IS_BOOL
+    IS_BOOL,
+	IS_FRACTION
 };
 
 struct VALUE {
@@ -30,29 +32,110 @@ struct VALUE {
 		//del();
 	}
 
-	void del() {
-		if (NULL == val) return;
-		switch (type) {
+	void del(void* v, VAL_TYPE t) {
+		if (NULL == v) return;
+		switch (t) {
 		case IS_INTEGER:
-			delete (IntType*)val;
+			delete (IntType*)v;
 			break;
 		case IS_DOUBLE:
-			delete (double*)val;
+			delete (double*)v;
 			break;
 		case IS_BOOL:
-			delete (bool*)val;
+			delete (bool*)v;
+			break;
+		case IS_FRACTION:
+			delete (FRACTION*)v;
 			break;
 		}
+	}
+	void del() {
+		if (NULL == val) return;
+		del(val, type);
 		val = NULL;
+	}
+	void ChangeType(VAL_TYPE t) {
+		if (type == t) return;
+		auto tmp = val;
+		switch (t) {
+		case IS_INTEGER:
+			switch (type) {
+			case IS_INTEGER:
+				assert(1);		//type != t
+				break;
+			case IS_DOUBLE:
+				val = new IntType(*(double*)tmp);
+				break;
+			case IS_BOOL:
+				val = new IntType(*(bool*)tmp);
+				break;
+			case IS_FRACTION:
+				val = new IntType(*(FRACTION*)tmp);
+				break;
+			}
+			break;
+		case IS_DOUBLE:
+			switch (type) {
+			case IS_INTEGER:
+				val = new double(*(IntType*)tmp);
+				break;
+			case IS_DOUBLE:
+				assert(1);		//type != t
+				break;
+			case IS_BOOL:
+				val = new double(*(bool*)tmp);
+				break;
+			case IS_FRACTION:
+				val = new double(*(FRACTION*)tmp);
+				break;
+			}
+			break;
+		case IS_BOOL:
+			switch (type) {
+			case IS_INTEGER:
+				val = new bool(*(IntType*)tmp);
+				break;
+			case IS_DOUBLE:
+				val = new bool(*(double*)tmp);
+				break;
+			case IS_BOOL:
+				assert(1);		//type != t
+				break;
+			case IS_FRACTION:
+				val = new bool(*(FRACTION*)tmp);
+				break;
+			}
+			break;
+		case IS_FRACTION:
+			switch (type) {
+			case IS_INTEGER:
+				val = new FRACTION(*(IntType*)tmp);
+				break;
+			case IS_DOUBLE:
+				val = new FRACTION((IntType)*(double*)tmp);
+				break;
+			case IS_BOOL:
+				val = new FRACTION((IntType)(int)*(bool*)tmp);
+				break;
+			case IS_FRACTION:
+				assert(1);		//type != t
+				break;
+			}
+			break;
+		}
+		del(tmp, type);
+		type = t;
 	}
 	explicit operator bool() {
 		switch (type) {
 		case IS_INTEGER:
 			return (bool)*(IntType*)val;
 		case IS_DOUBLE:
-			return abs(*(double*)val) >= 1e-6;
+			return (bool)*(double*)val;
 		case IS_BOOL:
 			return *(bool*)val;
+		case IS_FRACTION:
+			return (bool)*(FRACTION*)val;
 		}
 		assert(1);
 		return false;
@@ -62,9 +145,11 @@ struct VALUE {
 		case IS_INTEGER:
 			return (size_t)(int)*(IntType*)val;
 		case IS_DOUBLE:
-			return (int)*(double*)val;
+			return (size_t)*(double*)val;
 		case IS_BOOL:
-			return (int)*(bool*)val;
+			return (size_t)*(bool*)val;
+		case IS_FRACTION:
+			return (size_t)(double)*(FRACTION*)val;
 		}
 		assert(1);
 		return -1;
@@ -73,16 +158,16 @@ struct VALUE {
 		type = rhs.type;
 		switch (type) {
 		case IS_INTEGER:
-			val = new IntType;
-			*(IntType*)val = *(IntType*)rhs.val;
+			val = new IntType(*(IntType*)rhs.val);
 			break;
 		case IS_DOUBLE:
-			val = new double;
-			*(double*)val = *(double*)rhs.val;
+			val = new double(*(double*)rhs.val);
 			break;
 		case IS_BOOL:
-			val = new bool;
-			*(bool*)val = *(bool*)rhs.val;
+			val = new bool(*(bool*)rhs.val);
+			break;
+		case IS_FRACTION:
+			val = new FRACTION(*(FRACTION*)rhs.val);
 			break;
 		}
 		return *this;
@@ -93,19 +178,20 @@ struct VALUE {
         case IS_INTEGER:
             switch (rhs.type) {
             case IS_INTEGER:
-                ans.type = IS_INTEGER;
-                ans.val = new IntType;
-                *(IntType*)ans.val = *(IntType*)val + *(IntType*)rhs.val;
+				ans.type = IS_INTEGER;
+				ans.val = new IntType(*(IntType*)val + *(IntType*)rhs.val);
                 break;
             case IS_DOUBLE:
-                ans.type = IS_DOUBLE;
-                ans.val = new double;
-                *(double*)ans.val = (double)(*(IntType*)val) + *(double*)rhs.val;
+				ans.type = IS_DOUBLE;
+				ans.val = new double((*(IntType*)val) + *(double*)rhs.val);
                 break;
 			case IS_BOOL:
 				ans.type = IS_INTEGER;
-				ans.val = new IntType;
-				*(IntType*)ans.val = *(IntType*)val + (IntType)(int)*(bool*)rhs.val;
+				ans.val = new IntType(*(IntType*)val + (int)*(bool*)rhs.val);
+				break;
+			case IS_FRACTION:
+				ans.type = IS_FRACTION;
+				ans.val = new FRACTION(*(IntType*)val + *(FRACTION*)rhs.val);
 				break;
             }
             break;
@@ -115,19 +201,47 @@ struct VALUE {
                 ans = rhs + *this;
                 break;
             case IS_DOUBLE:
-                ans.type = IS_DOUBLE;
-                ans.val = new double;
-                *(double*)ans.val = *(double*)val + *(double*)rhs.val;
+				ans.type = IS_DOUBLE;
+				ans.val = new double(*(double*)val + *(double*)rhs.val);
                 break;
 			case IS_BOOL:
 				ans.type = IS_DOUBLE;
-				ans.val = new double;
-				*(double*)ans.val = *(double*)val + (double)*(bool*)rhs.val;
+				ans.val = new double(*(double*)val + (double)*(bool*)rhs.val);
+				break;
+			case IS_FRACTION:
+				ans.type = IS_DOUBLE;
+				ans.val = new double(*(double*)val + (double)*(FRACTION*)rhs.val);
 				break;
             }
 			break;
 		case IS_BOOL:
-			ans = rhs + *this;
+			switch (rhs.type) {
+			case IS_INTEGER:
+			case IS_DOUBLE:
+				ans = rhs + *this;
+				break;
+			case IS_BOOL:
+				ans.type = IS_BOOL;
+				ans.val = new bool(*(bool*)val + *(bool*)rhs.val);
+				break;
+			case IS_FRACTION:
+				ans.type = IS_FRACTION;
+				ans.val = new FRACTION((FRACTION)(IntType)(int)*(bool*)val + *(FRACTION*)rhs.val);
+				break;
+			}
+			break;
+		case IS_FRACTION:
+			switch (rhs.type) {
+			case IS_INTEGER:
+			case IS_DOUBLE:
+			case IS_BOOL:
+				ans = rhs + *this;
+				break;
+			case IS_FRACTION:
+				ans.type = IS_FRACTION;
+				ans.val = new FRACTION(*(FRACTION*)val + *(FRACTION*)rhs.val);
+				break;
+			}
 			break;
         }
 		return ans;
@@ -150,14 +264,21 @@ struct VALUE {
 			case IS_BOOL:
 				ans.type = IS_INTEGER;
 				ans.val = new IntType;
-				*(IntType*)ans.val = *(IntType*)val - (IntType)(int)*(bool*)rhs.val;
+				*(IntType*)ans.val = *(IntType*)val - (int)*(bool*)rhs.val;
+				break;
+			case IS_FRACTION:
+				ans.type = IS_FRACTION;
+				ans.val = new FRACTION;
+				*(FRACTION*)ans.val = *(IntType*)val - *(FRACTION*)rhs.val;
 				break;
             }
             break;
         case IS_DOUBLE:
             switch (rhs.type) {
             case IS_INTEGER:
-                ans = rhs - *this;
+                ans.type = IS_DOUBLE;
+				ans.val = new double;
+				*(double*)ans.val = *(double*)val - (double)*(IntType*)rhs.val;
                 break;
             case IS_DOUBLE:
                 ans.type = IS_DOUBLE;
@@ -165,12 +286,64 @@ struct VALUE {
                 *(double*)ans.val = *(double*)val - *(double*)rhs.val;
                 break;
 			case IS_BOOL:
-				assert(1);
+				ans.type = IS_DOUBLE;
+				ans.val = new double;
+				*(double*)ans.val = *(double*)val - (double)*(bool*)rhs.val;
+				break;
+			case IS_FRACTION:
+				ans.type = IS_DOUBLE;
+				ans.val = new double;
+				*(double*)ans.val = *(double*)val - (double)*(FRACTION*)rhs.val;
 				break;
             }
 			break;
 		case IS_BOOL:
-			assert(1);
+			switch (rhs.type) {
+			case IS_INTEGER:
+				ans.type = IS_INTEGER;
+				ans.val = new IntType;
+				*(IntType*)ans.val = (IntType)(int)*(bool*)val - *(IntType*)rhs.val;
+				break;
+			case IS_DOUBLE:
+				ans.type = IS_DOUBLE;
+				ans.val = new double;
+				*(double*)ans.val = (double)*(bool*)val - *(double*)rhs.val;
+				break;
+			case IS_BOOL:
+				ans.type = IS_BOOL;
+				ans.val = new bool;
+				*(bool*)ans.val = *(bool*)val - *(bool*)rhs.val;
+				break;
+			case IS_FRACTION:
+				ans.type = IS_FRACTION;
+				ans.val = new FRACTION;
+				*(FRACTION*)ans.val = (FRACTION)(IntType)(int)*(bool*)val - *(FRACTION*)rhs.val;
+				break;
+			}
+			break;
+		case IS_FRACTION:
+			switch (rhs.type) {
+			case IS_INTEGER:
+				ans.type = IS_FRACTION;
+				ans.val = new FRACTION;
+				*(FRACTION*)ans.val = *(FRACTION*)val - *(FRACTION*)rhs.val;
+				break;
+			case IS_DOUBLE:
+				ans.type = IS_DOUBLE;
+				ans.val = new double;
+				*(double*)ans.val = (double)*(FRACTION*)val - *(double*)rhs.val;
+				break;
+			case IS_BOOL:
+				ans.type = IS_FRACTION;
+				ans.val = new FRACTION;
+				*(FRACTION*)ans.val = *(FRACTION*)val - (IntType)(int)*(bool*)rhs.val;
+				break;
+			case IS_FRACTION:
+				ans.type = IS_FRACTION;
+				ans.val = new FRACTION;
+				*(FRACTION*)ans.val = *(FRACTION*)val - *(FRACTION*)rhs.val;
+				break;
+			}
 			break;
         }
 		return ans;
@@ -191,7 +364,14 @@ struct VALUE {
                 *(double*)ans.val = (double)(*(IntType*)val) * *(double*)rhs.val;
                 break;
 			case IS_BOOL:
-				assert(1);
+				ans.type = IS_INTEGER;
+				ans.val = new IntType;
+				*(IntType*)ans.val = *(IntType*)val * (int)*(bool*)rhs.val;
+				break;
+			case IS_FRACTION:
+				ans.type = IS_FRACTION;
+				ans.val = new FRACTION;
+				*(FRACTION*)ans.val = *(IntType*)val * *(FRACTION*)rhs.val;
 				break;
             }
             break;
@@ -206,12 +386,48 @@ struct VALUE {
                 *(double*)ans.val = *(double*)val * *(double*)rhs.val;
                 break;
 			case IS_BOOL:
-				assert(1);
+				ans.type = IS_DOUBLE;
+				ans.val = new double;
+				*(double*)ans.val = *(double*)val * (double)*(bool*)rhs.val;
+				break;
+			case IS_FRACTION:
+				ans.type = IS_DOUBLE;
+				ans.val = new double;
+				*(double*)ans.val = *(double*)val * (double)*(FRACTION*)rhs.val;
 				break;
             }
 			break;
 		case IS_BOOL:
-			assert(1);
+			switch (rhs.type) {
+			case IS_INTEGER:
+			case IS_DOUBLE:
+				ans = rhs * *this;
+				break;
+			case IS_BOOL:
+				ans.type = IS_BOOL;
+				ans.val = new bool;
+				*(bool*)ans.val = *(bool*)val && *(bool*)rhs.val;
+				break;
+			case IS_FRACTION:
+				ans.type = IS_FRACTION;
+				ans.val = new FRACTION;
+				*(FRACTION*)ans.val = (IntType)(int)*(bool*)val * *(FRACTION*)rhs.val;
+				break;
+			}
+			break;
+		case IS_FRACTION:
+			switch (rhs.type) {
+			case IS_INTEGER:
+			case IS_DOUBLE:
+			case IS_BOOL:
+				ans = rhs * *this;
+				break;
+			case IS_FRACTION:
+				ans.type = IS_FRACTION;
+				ans.val = new FRACTION;
+				*(FRACTION*)ans.val = *(FRACTION*)val * *(FRACTION*)rhs.val;
+				break;
+			}
 			break;
         }
 		return ans;
@@ -232,14 +448,23 @@ struct VALUE {
                 *(double*)ans.val = (double)(*(IntType*)val) / *(double*)rhs.val;
                 break;
 			case IS_BOOL:
-				assert(1);
+				ans.type = IS_INTEGER;
+				ans.val = new IntType;
+				*(IntType*)ans.val = *(IntType*)val / (int)*(bool*)rhs.val;
+				break;
+			case IS_FRACTION:
+				ans.type = IS_FRACTION;
+				ans.val = new FRACTION;
+				*(FRACTION*)ans.val = *(IntType*)val / *(FRACTION*)rhs.val;
 				break;
             }
             break;
         case IS_DOUBLE:
             switch (rhs.type) {
             case IS_INTEGER:
-                ans = rhs / *this;
+                ans.type = IS_DOUBLE;
+				ans.val = new double;
+				*(double*)ans.val = *(double*)val / (double)*(IntType*)rhs.val;
                 break;
             case IS_DOUBLE:
                 ans.type = IS_DOUBLE;
@@ -247,12 +472,64 @@ struct VALUE {
                 *(double*)ans.val = *(double*)val / *(double*)rhs.val;
                 break;
 			case IS_BOOL:
-				assert(1);
+				ans.type = IS_DOUBLE;
+				ans.val = new double;
+				*(double*)ans.val = *(double*)val / (double)*(bool*)rhs.val;
+				break;
+			case IS_FRACTION:
+				ans.type = IS_DOUBLE;
+				ans.val = new double;
+				*(double*)ans.val = *(double*)val / (double)*(FRACTION*)rhs.val;
 				break;
             }
 			break;
 		case IS_BOOL:
-			assert(1);
+			switch (rhs.type) {
+			case IS_INTEGER:
+				ans.type = IS_INTEGER;
+				ans.val = new IntType;
+				*(IntType*)ans.val = (IntType)(int)*(bool*)val / *(IntType*)rhs.val;
+				break;
+			case IS_DOUBLE:
+				ans.type = IS_DOUBLE;
+				ans.val = new double;
+				*(double*)ans.val = (double)*(bool*)val / *(double*)rhs.val;
+				break;
+			case IS_BOOL:
+				ans.type = IS_BOOL;
+				ans.val = new bool;
+				*(bool*)ans.val = *(bool*)val / *(bool*)rhs.val;
+				break;
+			case IS_FRACTION:
+				ans.type = IS_FRACTION;
+				ans.val = new FRACTION;
+				*(FRACTION*)ans.val = (FRACTION)(IntType)(int)*(bool*)val / *(FRACTION*)rhs.val;
+				break;
+			}
+			break;
+		case IS_FRACTION:
+			switch (rhs.type) {
+			case IS_INTEGER:
+				ans.type = IS_FRACTION;
+				ans.val = new FRACTION;
+				*(FRACTION*)ans.val = *(FRACTION*)val / *(FRACTION*)rhs.val;
+				break;
+			case IS_DOUBLE:
+				ans.type = IS_DOUBLE;
+				ans.val = new double;
+				*(double*)ans.val = (double)*(FRACTION*)val / *(double*)rhs.val;
+				break;
+			case IS_BOOL:
+				ans.type = IS_FRACTION;
+				ans.val = new FRACTION;
+				*(FRACTION*)ans.val = *(FRACTION*)val / (IntType)(int)*(bool*)rhs.val;
+				break;
+			case IS_FRACTION:
+				ans.type = IS_FRACTION;
+				ans.val = new FRACTION;
+				*(FRACTION*)ans.val = *(FRACTION*)val / *(FRACTION*)rhs.val;
+				break;
+			}
 			break;
         }
 		return ans;
@@ -273,6 +550,11 @@ struct VALUE {
                 *(double*)ans.val = fmod((double)(*(IntType*)val), *(double*)rhs.val);
                 break;
 			case IS_BOOL:
+				ans.type = IS_INTEGER;
+				ans.val = new IntType;
+				*(IntType*)ans.val = *(IntType*)val % (int)*(bool*)rhs.val;
+				break;
+			case IS_FRACTION:
 				assert(1);
 				break;
             }
@@ -288,11 +570,40 @@ struct VALUE {
                 *(double*)ans.val = fmod(*(double*)val, *(double*)rhs.val);
                 break;
 			case IS_BOOL:
-				assert(1);
+				ans.type = IS_DOUBLE;
+				ans.val = new double;
+				*(double*)ans.val = fmod(*(double*)val, (double)*(bool*)rhs.val);
+				break;
+			case IS_FRACTION:
+				ans.type = IS_DOUBLE;
+				ans.val = new double;
+				*(double*)ans.val = fmod(*(double*)val, (double)*(FRACTION*)rhs.val);
 				break;
             }
 			break;
 		case IS_BOOL:
+			switch (rhs.type) {
+			case IS_INTEGER:
+				ans.type = IS_INTEGER;
+				ans.val = new IntType;
+				*(IntType*)ans.val = (IntType)(int)*(bool*)val % *(IntType*)rhs.val;
+				break;
+			case IS_DOUBLE:
+				ans.type = IS_DOUBLE;
+				ans.val = new double;
+				*(double*)ans.val = fmod((double)*(bool*)val, *(double*)rhs.val);
+				break;
+			case IS_BOOL:
+				ans.type = IS_BOOL;
+				ans.val = new bool;
+				*(bool*)ans.val = *(bool*)val % *(bool*)rhs.val;
+				break;
+			case IS_FRACTION:
+				assert(1);
+				break;
+			}
+			break;
+		case IS_FRACTION:
 			assert(1);
 			break;
         }
@@ -316,6 +627,11 @@ struct VALUE {
 			ans.val = new bool;
 			*(bool*)ans.val = -*(bool*)val;
 			break;
+		case IS_FRACTION:
+			ans.type = IS_FRACTION;
+			ans.val = new FRACTION;
+			*(FRACTION*)ans.val = -*(FRACTION*)val;
+			break;
 		}
 		return ans;
 	}
@@ -328,13 +644,15 @@ struct VALUE {
 				*(IntType*)val += *(IntType*)rhs.val;
 				break;
 			case IS_DOUBLE:
-				delete (IntType*)val;
-				type = IS_DOUBLE;
-				val = new double;
+				ChangeType(IS_DOUBLE);
 				*(double*)val += *(double*)rhs.val;
 				break;
 			case IS_BOOL:
-				assert(1);
+				*(IntType*)val += (int)*(bool*)rhs.val;
+				break;
+			case IS_FRACTION:
+				ChangeType(IS_FRACTION);
+				*(FRACTION*)val += *(FRACTION*)rhs.val;
 				break;
 			}
 			break;
@@ -347,12 +665,32 @@ struct VALUE {
 				*(double*)val += *(double*)rhs.val;
 				break;
 			case IS_BOOL:
-				assert(1);
+				*(double*)val += *(bool*)rhs.val;
+				break;
+			case IS_FRACTION:
+				*(double*)val += (double)*(FRACTION*)rhs.val;
 				break;
 			}
 			break;
 		case IS_BOOL:
 			assert(1);
+			break;
+		case IS_FRACTION:
+			switch (rhs.type) {
+			case IS_INTEGER:
+				*(FRACTION*)val += *(FRACTION*)rhs.val;
+				break;
+			case IS_DOUBLE:
+				ChangeType(IS_DOUBLE);
+				*(double*)val += *(double*)rhs.val;
+				break;
+			case IS_BOOL:
+				*(FRACTION*)val += (IntType)(int)*(bool*)rhs.val;
+				break;
+			case IS_FRACTION:
+				*(FRACTION*)val += *(FRACTION*)rhs.val;
+				break;
+			}
 			break;
 		}
 		return *this;
@@ -365,13 +703,15 @@ struct VALUE {
 				*(IntType*)val -= *(IntType*)rhs.val;
 				break;
 			case IS_DOUBLE:
-				delete (IntType*)val;
-				type = IS_DOUBLE;
-				val = new double;
+				ChangeType(IS_DOUBLE);
 				*(double*)val -= *(double*)rhs.val;
 				break;
 			case IS_BOOL:
 				assert(1);
+				break;
+			case IS_FRACTION:
+				ChangeType(IS_FRACTION);
+				*(FRACTION*)val -= *(FRACTION*)rhs.val;
 				break;
 			}
 			break;
@@ -384,12 +724,32 @@ struct VALUE {
 				*(double*)val -= *(double*)rhs.val;
 				break;
 			case IS_BOOL:
-				assert(1);
+				*(double*)val -= *(bool*)rhs.val;
+				break;
+			case IS_FRACTION:
+				*(double*)val -= (double)*(FRACTION*)rhs.val;
 				break;
 			}
 			break;
 		case IS_BOOL:
 			assert(1);
+			break;
+		case IS_FRACTION:
+			switch (rhs.type) {
+			case IS_INTEGER:
+				*(FRACTION*)val -= *(FRACTION*)rhs.val;
+				break;
+			case IS_DOUBLE:
+				ChangeType(IS_DOUBLE);
+				*(double*)val -= *(double*)rhs.val;
+				break;
+			case IS_BOOL:
+				*(FRACTION*)val -= (IntType)(int)*(bool*)rhs.val;
+				break;
+			case IS_FRACTION:
+				*(FRACTION*)val -= *(FRACTION*)rhs.val;
+				break;
+			}
 			break;
 		}
 		return *this;
@@ -402,13 +762,15 @@ struct VALUE {
 				*(IntType*)val *= *(IntType*)rhs.val;
 				break;
 			case IS_DOUBLE:
-				delete (IntType*)val;
-				type = IS_DOUBLE;
-				val = new double;
+				ChangeType(IS_DOUBLE);
 				*(double*)val *= *(double*)rhs.val;
 				break;
 			case IS_BOOL:
-				assert(1);
+				*(IntType*)val *= (int)*(bool*)rhs.val;
+				break;
+			case IS_FRACTION:
+				ChangeType(IS_FRACTION);
+				*(FRACTION*)val *= *(FRACTION*)rhs.val;
 				break;
 			}
 			break;
@@ -421,12 +783,32 @@ struct VALUE {
 				*(double*)val *= *(double*)rhs.val;
 				break;
 			case IS_BOOL:
-				assert(1);
+				*(double*)val *= *(bool*)rhs.val;
+				break;
+			case IS_FRACTION:
+				*(double*)val *= (double)*(FRACTION*)rhs.val;
 				break;
 			}
 			break;
 		case IS_BOOL:
 			assert(1);
+			break;
+		case IS_FRACTION:
+			switch (rhs.type) {
+			case IS_INTEGER:
+				*(FRACTION*)val *= *(FRACTION*)rhs.val;
+				break;
+			case IS_DOUBLE:
+				ChangeType(IS_DOUBLE);
+				*(double*)val *= *(double*)rhs.val;
+				break;
+			case IS_BOOL:
+				*(FRACTION*)val *= (IntType)(int)*(bool*)rhs.val;
+				break;
+			case IS_FRACTION:
+				*(FRACTION*)val *= *(FRACTION*)rhs.val;
+				break;
+			}
 			break;
 		}
 		return *this;
@@ -439,13 +821,15 @@ struct VALUE {
 				*(IntType*)val /= *(IntType*)rhs.val;
 				break;
 			case IS_DOUBLE:
-				delete (IntType*)val;
-				type = IS_DOUBLE;
-				val = new double;
+				ChangeType(IS_DOUBLE);
 				*(double*)val /= *(double*)rhs.val;
 				break;
 			case IS_BOOL:
-				assert(1);
+				*(IntType*)val /= (int)*(bool*)rhs.val;
+				break;
+			case IS_FRACTION:
+				ChangeType(IS_FRACTION);
+				*(FRACTION*)val /= *(FRACTION*)rhs.val;
 				break;
 			}
 			break;
@@ -458,12 +842,32 @@ struct VALUE {
 				*(double*)val /= *(double*)rhs.val;
 				break;
 			case IS_BOOL:
-				assert(1);
+				*(double*)val /= *(bool*)rhs.val;
+				break;
+			case IS_FRACTION:
+				*(double*)val /= (double)*(FRACTION*)rhs.val;
 				break;
 			}
 			break;
 		case IS_BOOL:
 			assert(1);
+			break;
+		case IS_FRACTION:
+			switch (rhs.type) {
+			case IS_INTEGER:
+				*(FRACTION*)val /= *(FRACTION*)rhs.val;
+				break;
+			case IS_DOUBLE:
+				ChangeType(IS_DOUBLE);
+				*(double*)val /= *(double*)rhs.val;
+				break;
+			case IS_BOOL:
+				*(FRACTION*)val /= (IntType)(int)*(bool*)rhs.val;
+				break;
+			case IS_FRACTION:
+				*(FRACTION*)val /= *(FRACTION*)rhs.val;
+				break;
+			}
 			break;
 		}
 		return *this;
@@ -476,12 +880,13 @@ struct VALUE {
 				*(IntType*)val %= *(IntType*)rhs.val;
 				break;
 			case IS_DOUBLE:
-				delete (IntType*)val;
-				type = IS_DOUBLE;
-				val = new double;
+				ChangeType(IS_DOUBLE);
 				*(double*)val = fmod(*(double*)val, *(double*)rhs.val);
 				break;
 			case IS_BOOL:
+				*(IntType*)val %= (int)*(bool*)rhs.val;
+				break;
+			case IS_FRACTION:
 				assert(1);
 				break;
 			}
@@ -495,11 +900,15 @@ struct VALUE {
 				*(double*)val = fmod(*(double*)val, *(double*)rhs.val);
 				break;
 			case IS_BOOL:
+			case IS_FRACTION:
 				assert(1);
 				break;
 			}
 			break;
 		case IS_BOOL:
+			assert(1);
+			break;
+		case IS_FRACTION:
 			assert(1);
 			break;
 		}
@@ -517,6 +926,9 @@ struct VALUE {
 			//++*(bool*)val;
 			assert(1);	//use of an operand of type ‘bool’ in ‘operator++’ is forbidden in C++1z
 			break;
+		case IS_FRACTION:
+			*(FRACTION*)val += (FRACTION)(IntType)1;
+			break;
 		}
 		return *this;
 	}
@@ -532,11 +944,14 @@ struct VALUE {
 			//--*(bool*)val;
 			assert(1);	//use of an operand of type ‘bool’ in ‘operator--’ is forbidden in C++1z
 			break;
+		case IS_FRACTION:
+			*(FRACTION*)val -= (FRACTION)(IntType)1;
+			break;
 		}
 		return *this;
 	}
 
-	VALUE operator < (const VALUE& rhs) {
+	VALUE operator < (const VALUE& rhs) const {
 		static VALUE ans;
 		ans.type = IS_BOOL;
 		ans.val = new bool;
@@ -552,6 +967,9 @@ struct VALUE {
 			case IS_BOOL:
 				assert(1);
 				break;
+			case IS_FRACTION:
+				*(bool*)ans.val = *(IntType*)val < *(FRACTION*)rhs.val;
+				break;
 			}
 			break;
 		case IS_DOUBLE:
@@ -565,301 +983,54 @@ struct VALUE {
 			case IS_BOOL:
 				assert(1);
 				break;
-			}
-			break;
-		case IS_BOOL:
-			assert(1);
-			break;
-		}
-		return ans;
-	}
-	VALUE operator <= (const VALUE& rhs) {
-		static VALUE ans;
-		ans.type = IS_BOOL;
-		ans.val = new bool;
-		switch (type) {
-		case IS_INTEGER:
-			switch (rhs.type) {
-			case IS_INTEGER:
-				*(bool*)ans.val = *(IntType*)val <= *(IntType*)rhs.val;
-				break;
-			case IS_DOUBLE:
-				*(bool*)ans.val = (double)*(IntType*)val <= *(double*)rhs.val;
-				break;
-			case IS_BOOL:
-				assert(1);
-				break;
-			}
-			break;
-		case IS_DOUBLE:
-			switch (rhs.type) {
-			case IS_INTEGER:
-				*(bool*)ans.val = *(double*)val <= (double)*(IntType*)rhs.val;
-				break;
-			case IS_DOUBLE:
-				*(bool*)ans.val = *(double*)val <= *(double*)rhs.val;
-				break;
-			case IS_BOOL:
-				assert(1);
+			case IS_FRACTION:
+				*(bool*)ans.val = *(double*)val < (double)*(FRACTION*)rhs.val;
 				break;
 			}
 			break;
 		case IS_BOOL:
 			assert(1);
 			break;
-		}
-		return ans;
-	}
-	VALUE operator > (const VALUE& rhs) {
-		static VALUE ans;
-		ans.type = IS_BOOL;
-		ans.val = new bool;
-		switch (type) {
-		case IS_INTEGER:
+		case IS_FRACTION:
 			switch (rhs.type) {
 			case IS_INTEGER:
-				*(bool*)ans.val = *(IntType*)val > *(IntType*)rhs.val;
+				*(bool*)ans.val = *(FRACTION*)val < *(IntType*)rhs.val;
 				break;
 			case IS_DOUBLE:
-				*(bool*)ans.val = (double)*(IntType*)val > *(double*)rhs.val;
+				*(bool*)ans.val = (double)*(FRACTION*)val < *(double*)rhs.val;
 				break;
 			case IS_BOOL:
-				assert(1);
+				*(bool*)ans.val = *(FRACTION*)val < (IntType)(int)*(bool*)rhs.val;
 				break;
-			}
-			break;
-		case IS_DOUBLE:
-			switch (rhs.type) {
-			case IS_INTEGER:
-				*(bool*)ans.val = *(double*)val > (double)*(IntType*)rhs.val;
+			case IS_FRACTION:
+				*(bool*)ans.val = *(FRACTION*)val < *(FRACTION*)rhs.val;
 				break;
-			case IS_DOUBLE:
-				*(bool*)ans.val = *(double*)val > *(double*)rhs.val;
-				break;
-			case IS_BOOL:
-				assert(1);
-				break;
-			}
-			break;
-		case IS_BOOL:
-			assert(1);
-			break;
-		}
-		return ans;
-	}
-	VALUE operator >= (const VALUE& rhs) {
-		static VALUE ans;
-		ans.type = IS_BOOL;
-		ans.val = new bool;
-		switch (type) {
-		case IS_INTEGER:
-			switch (rhs.type) {
-			case IS_INTEGER:
-				*(bool*)ans.val = *(IntType*)val >= *(IntType*)rhs.val;
-				break;
-			case IS_DOUBLE:
-				*(bool*)ans.val = (double)*(IntType*)val >= *(double*)rhs.val;
-				break;
-			case IS_BOOL:
-				assert(1);
-				break;
-			}
-			break;
-		case IS_DOUBLE:
-			switch (rhs.type) {
-			case IS_INTEGER:
-				*(bool*)ans.val = *(double*)val >= (double)*(IntType*)rhs.val;
-				break;
-			case IS_DOUBLE:
-				*(bool*)ans.val = *(double*)val >= *(double*)rhs.val;
-				break;
-			case IS_BOOL:
-				assert(1);
-				break;
-			}
-			break;
-		case IS_BOOL:
-			assert(1);
-			break;
-		}
-		return ans;
-	}
-	VALUE operator == (const VALUE& rhs) {
-		static VALUE ans;
-		ans.type = IS_BOOL;
-		ans.val = new bool;
-		switch (type) {
-		case IS_INTEGER:
-			switch (rhs.type) {
-			case IS_INTEGER:
-				*(bool*)ans.val = *(IntType*)val == *(IntType*)rhs.val;
-				break;
-			case IS_DOUBLE:
-				*(bool*)ans.val = Equal((double)*(IntType*)val, *(double*)rhs.val);
-				break;
-			case IS_BOOL:
-				*(bool*)ans.val = *(IntType*)val == (IntType)(int)*(bool*)rhs.val;
-				break;
-			}
-			break;
-		case IS_DOUBLE:
-			switch (rhs.type) {
-			case IS_INTEGER:
-				*(bool*)ans.val = Equal(*(double*)val, (double)*(IntType*)rhs.val);
-				break;
-			case IS_DOUBLE:
-				*(bool*)ans.val = Equal(*(double*)val, *(double*)rhs.val);
-				break;
-			case IS_BOOL:
-				*(bool*)ans.val = Equal(*(double*)val, (double)(int)*(bool*)rhs.val);
-				break;
-			}
-			break;
-		case IS_BOOL:
-			switch (rhs.type) {
-            case IS_INTEGER:
-                *(bool*)ans.val = *(bool*)val == (bool)*(IntType*)rhs.val;
-                break;
-            case IS_DOUBLE:
-                *(bool*)ans.val = *(bool*)val == (bool)*(double*)rhs.val;
-                break;
-            case IS_BOOL:
-                *(bool*)ans.val = *(bool*)val == *(bool*)rhs.val;
-                break;
 			}
 			break;
 		}
 		return ans;
 	}
-	VALUE operator != (const VALUE& rhs) {
-		static VALUE ans;
-		ans.type = IS_BOOL;
-		ans.val = new bool;
-		switch (type) {
-		case IS_INTEGER:
-			switch (rhs.type) {
-			case IS_INTEGER:
-				*(bool*)ans.val = *(IntType*)val != *(IntType*)rhs.val;
-				break;
-			case IS_DOUBLE:
-				*(bool*)ans.val = NotEqual((double)*(IntType*)val, *(double*)rhs.val);
-				break;
-			case IS_BOOL:
-				assert(1);
-				break;
-			}
-			break;
-		case IS_DOUBLE:
-			switch (rhs.type) {
-			case IS_INTEGER:
-				*(bool*)ans.val = NotEqual(*(double*)val, (double)*(IntType*)rhs.val);
-				break;
-			case IS_DOUBLE:
-				*(bool*)ans.val = NotEqual(*(double*)val, *(double*)rhs.val);
-				break;
-			case IS_BOOL:
-				assert(1);
-				break;
-			}
-			break;
-		case IS_BOOL:
-			assert(1);
-			break;
-		}
+	VALUE operator > (const VALUE& rhs) const {
+		return rhs < *this;
+	}
+	VALUE operator <= (const VALUE& rhs) const {
+		VALUE ans(*this > rhs);
+		*(bool*)ans.val = !*(bool*)ans.val;
 		return ans;
 	}
-	VALUE operator && (const VALUE& rhs) {
-		static VALUE ans;
-		ans.type = IS_BOOL;
-		ans.val = new bool;
-		switch (type) {
-		case IS_INTEGER:
-			switch (rhs.type) {
-			case IS_INTEGER:
-				*(bool*)ans.val = (bool)*(IntType*)val && (bool)*(IntType*)rhs.val;
-				break;
-			case IS_DOUBLE:
-				*(bool*)ans.val = (bool)*(IntType*)val && *(bool*)rhs.val;
-				break;
-			case IS_BOOL:
-				*(bool*)ans.val = (bool)*(IntType*)val && *(bool*)rhs.val;
-				break;
-			}
-			break;
-		case IS_DOUBLE:
-			switch (rhs.type) {
-			case IS_INTEGER:
-				*(bool*)ans.val = NotZero(*(double*)val) && (bool)*(IntType*)rhs.val;
-				break;
-			case IS_DOUBLE:
-				*(bool*)ans.val = NotZero(*(double*)val) && NotZero(*(double*)rhs.val);
-				break;
-			case IS_BOOL:
-				*(bool*)ans.val = (bool)*(double*)val && *(bool*)rhs.val;
-				break;
-			}
-			break;
-		case IS_BOOL:
-			switch (rhs.type) {
-            case IS_INTEGER:
-                *(bool*)ans.val = *(bool*)val && (bool)*(IntType*)rhs.val;
-                break;
-            case IS_DOUBLE:
-                *(bool*)ans.val = *(bool*)val && NotZero(*(double*)rhs.val);
-                break;
-            case IS_BOOL:
-                *(bool*)ans.val = *(bool*)val && *(bool*)rhs.val;
-                break;
-			}
-			break;
-		}
+	VALUE operator >= (const VALUE& rhs) const {
+		return rhs <= *this;
+	}
+	VALUE operator == (const VALUE& rhs) const {
+		VALUE ans(*this < rhs);
+		VALUE ans1(*this > rhs);
+		*(bool*)ans.val = !*(bool*)ans.val && !*(bool*)ans1.val;
+		ans1.del();
 		return ans;
 	}
-	VALUE operator || (const VALUE& rhs) {
-		static VALUE ans;
-		ans.type = IS_BOOL;
-		ans.val = new bool;
-		switch (type) {
-		case IS_INTEGER:
-			switch (rhs.type) {
-			case IS_INTEGER:
-				*(bool*)ans.val = *(IntType*)val || *(IntType*)rhs.val;
-				break;
-			case IS_DOUBLE:
-				*(bool*)ans.val = (double)*(IntType*)val || *(double*)rhs.val;
-				break;
-			case IS_BOOL:
-				*(bool*)ans.val = (bool)*(IntType*)val || *(bool*)rhs.val;
-				break;
-			}
-			break;
-		case IS_DOUBLE:
-			switch (rhs.type) {
-			case IS_INTEGER:
-				*(bool*)ans.val = *(double*)val || (double)*(IntType*)rhs.val;
-				break;
-			case IS_DOUBLE:
-				*(bool*)ans.val = *(double*)val || *(double*)rhs.val;
-				break;
-			case IS_BOOL:
-				*(bool*)ans.val = NotZero(*(double*)val) || *(bool*)rhs.val;
-				break;
-			}
-			break;
-		case IS_BOOL:
-			switch (rhs.type) {
-            case IS_INTEGER:
-                *(bool*)ans.val = (bool)*(IntType*)val || *(bool*)rhs.val;
-                break;
-            case IS_DOUBLE:
-                *(bool*)ans.val = *(bool*)val || NotZero(*(double*)rhs.val);
-                break;
-            case IS_BOOL:
-                *(bool*)ans.val = *(bool*)val || *(bool*)rhs.val;
-                break;
-			}
-			break;
-		}
+	VALUE operator != (const VALUE& rhs) const {
+		VALUE ans(*this == rhs);
+		*(bool*)ans.val = !*(bool*)ans.val;
 		return ans;
 	}
 };

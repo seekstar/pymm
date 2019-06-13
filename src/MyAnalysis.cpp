@@ -272,6 +272,8 @@ const char* OperatorName(OPERATOR op)
         return "(++)";
     case DEC:
         return "(--)";
+    case FRA_DIV：
+        return "(//)";
 
     case LESS:
         return "(<)";
@@ -936,12 +938,14 @@ bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_
         FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
         ans = ans1 != ans2;
         break;
+
     case AND:
         FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
 		if ((bool)ans) {
 			ans.del();
         	FAIL_THEN_RETURN(CalcByTree(ans, root->child[1], false, variable_table, info));
 		}
+        ans.ToBool();
         break;
     case OR:
         FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
@@ -949,6 +953,7 @@ bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_
 			ans.del();
         	FAIL_THEN_RETURN(CalcByTree(ans, root->child[1], false, variable_table, info));
 		}
+        ans.ToBool();
         break;
     default:
         ErrMsg(info, "No such an operator ", root->op());

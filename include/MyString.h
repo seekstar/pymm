@@ -3,6 +3,7 @@
 
 #include <ctype.h>
 #include <string>
+#include <istream>
 
 using namespace std;
 
@@ -14,5 +15,7 @@ void MyItoa(char* str, int x);
 
 bool IsEmptyString(const char* str);
 void AppendWithNoCarry(string& str, const char* s);
+
+istream& ReadNotSpace(istream& in, char& ch);
 
 #endif // MYSTRING_H_INCLUDED

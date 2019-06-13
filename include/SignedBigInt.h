@@ -84,6 +84,18 @@ struct SignedBigInt
 	{
 	    return absVal.s.empty() ? b > 0 : ((b < 0) ^ is_minus ? is_minus : (is_minus ? -b < absVal : absVal < b));
 	}
+	bool operator <= (int rhs) const {
+		return *this < rhs || *this == rhs;
+	}
+	bool operator > (int rhs) const {
+		return !(*this <= rhs);
+	}
+	bool operator >= (int rhs) const {
+		return !(*this < rhs);
+	}
+	bool operator != (int rhs) const {
+		return !(*this == rhs);
+	}
 
 	SignedBigInt& operator = (LL num)
 	{
@@ -181,23 +193,6 @@ struct SignedBigInt
 		return *this = *this / b;
 	}
 
-	SignedBigInt& operator /= (int num)
-	{
-	    assert(num);
-	    if(num < 0)
-        {
-            is_minus = !is_minus;
-            num = -num;
-        }
-        absVal /= num;
-        return *this;
-	}
-	SignedBigInt operator / (int num) const
-	{
-	    SignedBigInt ans = *this;
-	    return ans /= num;
-	}
-
 	SignedBigInt operator % (const SignedBigInt& b) const
 	{
 	    SignedBigInt ans;
@@ -230,6 +225,10 @@ struct SignedBigInt
 	SignedBigInt& operator ++ () {
 		return *this += 1;
 	}
+	SignedBigInt operator + (int rhs) {
+		SignedBigInt ans = *this;
+		return ans += rhs;
+	}
 
 	SignedBigInt& operator -= (int rhs) {
 		if (rhs >= 0) {
@@ -245,6 +244,47 @@ struct SignedBigInt
 	}
 	SignedBigInt& operator -- () {
 		return *this -= 1;
+	}
+	SignedBigInt operator - (int rhs) {
+		SignedBigInt ans = *this;
+		return ans -= rhs;
+	}
+
+	SignedBigInt& operator *= (int rhs) {
+		if (rhs < 0) {
+			is_minus = !is_minus;
+			rhs = -rhs;
+		}
+		absVal *= rhs;
+		return *this;
+	}
+	SignedBigInt operator * (int rhs) {
+		SignedBigInt ans = *this;
+		return ans *= rhs;
+	}
+
+	SignedBigInt& operator /= (int rhs) {
+		assert(rhs);
+		if (rhs < 0) {
+			is_minus = !is_minus;
+			rhs = -rhs;
+		}
+		absVal /= rhs;
+		return *this;
+	}
+	SignedBigInt operator / (int rhs) {
+		SignedBigInt ans = *this;
+		return ans /= rhs;
+	}
+
+	int operator % (int rhs) {
+		int ans = absVal % std::abs(rhs);
+		return is_minus ? -ans : ans;
+	}
+
+	SignedBigInt& operator %= (int rhs) {
+		absVal %= std::abs(rhs);
+		return *this;
 	}
 };
 

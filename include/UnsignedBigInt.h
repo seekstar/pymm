@@ -99,6 +99,9 @@ struct UnsignedBigInt
         }
         return ans.str();
     }
+    explicit operator bool() const {
+        return !s.empty();
+    }
 
     /*UnsignedBigInt& operator = (const int num) {
         assert(num < BASE);
@@ -290,40 +293,32 @@ struct UnsignedBigInt
             return s[i] - b.s[i];
         }
     }
-    bool operator < (const UnsignedBigInt& b)const
-    {
+    bool operator < (const UnsignedBigInt& b) const {
         return cmp(b) < 0;
     }
-    bool operator > (const UnsignedBigInt& b)const
-    {
+    bool operator > (const UnsignedBigInt& b)const {
         return cmp(b) > 0;
     }
-    bool operator == (const UnsignedBigInt& b)const
-    {
+    bool operator == (const UnsignedBigInt& b)const {
         return cmp(b) == 0;
     }
-    bool operator != (const UnsignedBigInt& b) const
-    {
+    bool operator != (const UnsignedBigInt& b) const {
         return cmp(b) != 0;
     }
-    bool operator <= (const UnsignedBigInt& b)const
-    {
+    bool operator <= (const UnsignedBigInt& b)const {
         return cmp(b) <= 0;
     }
-    bool operator >= (const UnsignedBigInt& b)const
-    {
+    bool operator >= (const UnsignedBigInt& b)const {
         return cmp(b) >= 0;
     }
 
-    bool operator == (int b) const
-    {
+    bool operator == (int b) const {
         return s.size() == 1 ? (s[0] == b) : (s.size() ? 0 : b == 0);
     }
-    bool operator < (int b) const
-    {
+    bool operator < (int b) const {
         return s.size() == 1 ? (s[1] < b) : (s.size() ? 0 : b != 0);
     }
-    bool operator <= (int rhs) const  {
+    bool operator <= (int rhs) const {
         return *this < rhs || *this == rhs;
     }
     bool operator >= (int rhs) const {
@@ -332,12 +327,16 @@ struct UnsignedBigInt
     bool operator > (int rhs) const {
         return !(*this <= rhs);
     }
+    bool operator != (int rhs) const {
+        return !(*this == rhs);
+    }
 
     friend bool operator < (int lhs, const UnsignedBigInt& rhs);
     friend bool operator == (int lhs, const UnsignedBigInt& rhs);
     friend bool operator <= (int lhs, const UnsignedBigInt& rhs);
     friend bool operator > (int lhs, const UnsignedBigInt& rhs);
     friend bool operator >= (int lhs, const UnsignedBigInt& rhs);
+    friend bool operator != (int lhs, const UnsignedBigInt& rhs);
 
     UnsignedBigInt& operator -= (const UnsignedBigInt& b)
     {
@@ -402,36 +401,6 @@ struct UnsignedBigInt
     }
 
     friend int operator - (int lhs, const UnsignedBigInt& rhs);
-
-    UnsignedBigInt& operator /= (int num)
-    {
-        assert(0 < num && num < BASE);
-        LL rem = 0;//remain
-        for(int i = (int)s.size() - 1; i >= 0; i--)
-        {
-            rem = rem * BASE + s[i];
-            s[i] = rem / num;
-            rem %= num;
-        }
-        return clean();
-    }
-    UnsignedBigInt operator / (int num) const
-    {
-        UnsignedBigInt ans = *this;
-        return ans /= num;
-    }
-
-    int operator % (int num) const
-    {
-        assert(0 < num && num < BASE);
-        LL rem = 0;
-        for(int i = (int)s.size()-1; i >= 0; i--)
-        {
-            rem = rem * BASE + s[i];
-            rem %= num;
-        }
-        return rem;
-    }
 
     UnsignedBigInt& operator <<= (int n)
     {
@@ -522,6 +491,43 @@ struct UnsignedBigInt
     UnsignedBigInt& operator %= (const UnsignedBigInt& b)
     {
         return *this = *this % b;
+    }
+
+    int DivEq_Mod(int rhs) {
+        assert(rhs);
+        LL rem = 0;
+        for (int i = s.size()-1; i >= 0; --i) {
+            rem = rem * BASE + s[i];
+            s[i] = rem / rhs;
+            rem %= rhs;
+        }
+        clean();
+        return rem;
+    }
+    int operator % (int rhs) const {
+        UnsignedBigInt tmp = *this;
+        return tmp.DivEq_Mod(rhs);
+    }
+    UnsignedBigInt& operator /= (int rhs) {
+        DivEq_Mod(rhs);
+        return *this;
+    }
+    UnsignedBigInt operator / (int rhs) {
+        UnsignedBigInt ans = *this;
+        ans.DivEq_Mod(rhs);
+        return ans;
+    }
+
+    //int DivEq_Mod(int rhs)
+    UnsignedBigInt& operator %= (int rhs) {
+        int ans = DivEq_Mod(rhs);
+        if (ans) {
+            s.resize(1);
+            s[0] = ans;
+        } else {
+            s.resize(0);
+        }
+        return *this;
     }
 
     inline UnsignedBigInt Move_right_BASE(int n) const

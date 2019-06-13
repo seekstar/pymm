@@ -55,6 +55,7 @@ enum OPERATOR {
     DEC_BACK,*/
     INC,
     DEC,
+    FRA_DIV,    //fraction division
 
     LESS,
     LESS_EQ,

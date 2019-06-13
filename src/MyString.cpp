@@ -48,3 +48,10 @@ void AppendWithNoCarry(string& str, const char* s) {
         str += (*s == '\n' ? ' ' : *s);
     }
 }
+
+istream& ReadNotSpace(istream& in, char& ch) {
+    do {
+        in >> ch;
+    } while (isspace(ch));
+    return in;
+}

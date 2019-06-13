@@ -32,6 +32,9 @@ bool operator > (int lhs, const UnsignedBigInt& rhs) {
 bool operator >= (int lhs, const UnsignedBigInt& rhs) {
     return !(lhs < rhs);
 }
+bool operator != (int lhs, const UnsignedBigInt& rhs) {
+    return !(lhs == rhs);
+}
 
 
 UnsignedBigInt sqrt(const UnsignedBigInt& x, int m)
