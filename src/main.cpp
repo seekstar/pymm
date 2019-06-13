@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "MyPyMinusMinus.h"
+#include "MyPyMinusMinus.h" 
 
 using namespace std; 
 
@@ -12,7 +12,8 @@ int main()
 
     #if DEBUG
     //in = "a=4\n++a\n--a";
-    in = "a=6\n--a;\n--a";
+    //in = "a=6\n--a;\n--a";
+    in = "a=91\na--\na++";
     pymm.Input(in.c_str(), info);
     cout << "-------------\n" << info.str();
 

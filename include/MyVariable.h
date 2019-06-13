@@ -240,15 +240,13 @@ struct CONST_OR_VARIABLE{
 		left_value = lv;
 		val = new VARIABLE;
 	}
-    bool Copy(const CONST_OR_VARIABLE& rhs, ostream& info)
+    void Copy(const CONST_OR_VARIABLE& rhs)
     {
-        if(left_value && vari) {
-            val->Copy(*rhs.val);
-            return SUCCEED;
-        } else {
-            info << "Error: Assign to a right value or a constant value\n";
-            return FAIL;
-        }
+        val->Copy(*rhs.val);
+    }
+    void NewRightVal(const CONST_OR_VARIABLE& rhs) {
+        Init_new(false, false);
+        Copy(rhs);
     }
     CONST_OR_VARIABLE operator + (const CONST_OR_VARIABLE& rhs) const {
         static CONST_OR_VARIABLE ans;
@@ -280,10 +278,24 @@ struct CONST_OR_VARIABLE{
 		*ans.val = *val % *rhs.val;
 		return ans;
 	}
-    CONST_OR_VARIABLE operator - (void) const {
+    CONST_OR_VARIABLE operator - () const {
         static CONST_OR_VARIABLE ans;
         ans.Init_new(false, false);
         *ans.val = -*val;
+        return ans;
+    }
+    CONST_OR_VARIABLE operator ++ (int) {
+        assert(left_value && vari);
+        static CONST_OR_VARIABLE ans;
+        ans.NewRightVal(*this);
+        ++*this;
+        return ans;
+    }
+    CONST_OR_VARIABLE operator -- (int) {
+        assert(left_value && vari);
+        static CONST_OR_VARIABLE ans;
+        ans.NewRightVal(*this);
+        --*this;
         return ans;
     }
 

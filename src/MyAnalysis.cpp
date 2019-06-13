@@ -372,12 +372,15 @@ const char* SeparatorName(SEPARATOR separator) {
 	return "ERROR";
 }
 
-NODE* OperandBecomeLeftChild(OPERATOR op, NODE*& operand) {
+NODE* OperandBecomeChild(OPERATOR op, int order, NODE*& operand) {
     NODE* ans = new NODE(IS_OPERATOR);
     ans->op() = op;
-    ans->child[0] = operand;
+    ans->child[order] = operand;
     operand = NULL;
     return ans;
+}
+NODE* OperandBecomeLeftChild(OPERATOR op, NODE*& operand) {
+    return OperandBecomeChild(op, 0, operand);
 }
 
 void AddOperandToLastChild(NODE* op, NODE*& operand) {
@@ -603,7 +606,7 @@ bool Parsing_IS_OPERATOR(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>
         case INC:
         case DEC:
             if (operand) {
-                OperandBecomeLeftChild(op, operand);
+                operand = OperandBecomeChild(op, 1, operand);
             } else {
                 tmp = new NODE(IS_OPERATOR);
                 tmp->op() = op;
@@ -814,11 +817,19 @@ bool CalcByTree(CONST_OR_VARIABLE& ans, const NODE* root, bool create_variable, 
 bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_map<string, VARIABLE>& variable_table, ostream& info) {
     CONST_OR_VARIABLE ans1;
     CONST_OR_VARIABLE ans2;
+    bool status = SUCCEED;
+
 	switch (root->op()) {
     case ASSIGN:
         FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], true, variable_table, info));
         FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
-        FAIL_THEN_RETURN(ans.Copy(ans2, info));
+        if (ans.left_value && ans.vari) {
+            ans.Copy(ans2);
+        } else {
+            info << "Error: Assign to a right value or a constant value\n";
+            status = FAIL;
+            goto EXIT;
+        }
         break;
 
     case ADD:
@@ -877,12 +888,22 @@ bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_
         ans %= ans2;
         break;
     case INC:
-        FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
-        ++ans;
+        if (root->child[0]) {   //front incrimental operator
+            FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
+            ++ans;
+        } else {
+            FAIL_THEN_RETURN(CalcByTree(ans, root->child[1], false, variable_table, info));
+            ans = ans++;
+        }
         break;
     case DEC:
-        FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
-        --ans;
+        if (root->child[0]) {   //front incrimental operator
+            FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
+            --ans;
+        } else {
+            FAIL_THEN_RETURN(CalcByTree(ans, root->child[1], false, variable_table, info));
+            ans = ans--;
+        }
         break;
 
     case LESS:
@@ -933,9 +954,11 @@ bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_
         ErrMsg(info, "No such an operator ", root->op());
         break;
     }
+
+EXIT:
     ans1.del();
     ans2.del();
-	return SUCCEED;
+	return status;
 }
 bool CalcByTree_IS_STRUCTURE(const NODE* root, unordered_map<string, VARIABLE>& variable_table, ostream& info) {
     CONST_OR_VARIABLE condition;

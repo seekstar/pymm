@@ -347,7 +347,7 @@ bool IsSysFunc(const string& sth);
 bool IsKeyWord(const string& sth);
 
 
-
+NODE* OperandBecomeChild(OPERATOR op, int order, NODE*& operand);
 NODE* OperandBecomeLeftChild(OPERATOR op, NODE*& operand);
 void AddOperandToLastChild(NODE* op, NODE*& operand);
 void PopAllOperators(stack<NODE*>& operator_sta, NODE*& operand);
