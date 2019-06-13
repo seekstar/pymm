@@ -49,10 +49,12 @@ enum OPERATOR {
     MODULUS,
     MODULUS_EQ,
     MINUS,
-    INC_FRONT,
+    /*INC_FRONT,
     DEC_FRONT,
     INC_BACK,
-    DEC_BACK,
+    DEC_BACK,*/
+    INC,
+    DEC,
 
     LESS,
     LESS_EQ,
@@ -67,6 +69,7 @@ enum OPERATOR {
 
     BIT_AND,
     BIT_OR,
+    BIT_NOT,
     
     LEFT_PARENTHESIS,
     RIGHT_PARENTHESIS,

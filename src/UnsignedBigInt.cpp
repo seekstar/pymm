@@ -12,10 +12,27 @@ UnsignedBigInt operator * (int a, const UnsignedBigInt& b)
     return b * a;
 }
 
-bool operator < (const int& a, const UnsignedBigInt& b)
-{
-    return b.s.size() == 1 ? (a < b.s[0]) : !b.s.empty();
+int operator - (int lhs, const UnsignedBigInt& rhs) {
+    assert(lhs >= rhs);
+    return lhs - (int)rhs;
 }
+
+bool operator < (int lhs, const UnsignedBigInt& rhs) {
+    return rhs.s.size() == 1 ? (lhs < rhs.s[0]) : !rhs.s.empty();
+}
+bool operator == (int lhs, const UnsignedBigInt& rhs) {
+    return rhs == lhs;
+}
+bool operator <= (int lhs, const UnsignedBigInt& rhs) {
+    return lhs < rhs || lhs == rhs;
+}
+bool operator > (int lhs, const UnsignedBigInt& rhs) {
+    return !(lhs <= rhs);
+}
+bool operator >= (int lhs, const UnsignedBigInt& rhs) {
+    return !(lhs < rhs);
+}
+
 
 UnsignedBigInt sqrt(const UnsignedBigInt& x, int m)
 {
@@ -67,11 +84,11 @@ UnsignedBigInt sqrt(const UnsignedBigInt& x, int m)
         }
         x0.s[0] = L;
     }
-    else
+    else 
     {
-        int mov = (n / m) >> 1;//¿ª·½ºóÓÒ±ßµÄÎ»Êý
+        int mov = (n / m) >> 1;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò±ßµï¿½Î»ï¿½ï¿½
         x0.s.assign(x.s.begin() + mov * m, x.s.end());
-        x0 = (sqrt(x0, m)+1LL).Move_left_BASE(mov);//+1,Ê¹Æä´óÓÚÁãµã
+        x0 = (sqrt(x0, m)+1).Move_left_BASE(mov);//+1,Ê¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         UnsignedBigInt x1;
         do
         {

@@ -213,6 +213,39 @@ struct SignedBigInt
 	SignedBigInt abs() const {
 		return SignedBigInt(absVal);
 	}
+
+	SignedBigInt& operator += (int rhs) {
+		if (is_minus ^ (rhs<0)) {
+			if (absVal >= rhs) {
+				absVal -= rhs;
+			} else {
+				absVal = UnsignedBigInt(rhs - absVal);
+				is_minus = !is_minus;
+			}
+		} else {
+			absVal += rhs;
+		}
+		return *this;
+	}
+	SignedBigInt& operator ++ () {
+		return *this += 1;
+	}
+
+	SignedBigInt& operator -= (int rhs) {
+		if (rhs >= 0) {
+			if (is_minus) {
+				absVal += rhs;
+			} else {
+				absVal -= rhs;
+			}
+		} else {
+			absVal += -rhs;
+		}
+		return *this;
+	}
+	SignedBigInt& operator -- () {
+		return *this -= 1;
+	}
 };
 
 ostream& operator << (ostream& out, const SignedBigInt& a);

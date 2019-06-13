@@ -102,30 +102,40 @@ struct VARIABLE {
         return VARIABLE(-*(VALUE*)val);
     }
 
-    VARIABLE operator += (const VARIABLE& rhs) {
+    VARIABLE& operator += (const VARIABLE& rhs) {
 		assert(type == IS_VALUE && rhs.type == IS_VALUE);
 		*(VALUE*)val += *(const VALUE*)rhs.val;
 		return *this;
     }
-    VARIABLE operator -= (const VARIABLE& rhs) {
+    VARIABLE& operator -= (const VARIABLE& rhs) {
 		assert(type == IS_VALUE && rhs.type == IS_VALUE);
 		*(VALUE*)val -= *(const VALUE*)rhs.val;
 		return *this;
     }
-    VARIABLE operator *= (const VARIABLE& rhs) {
+    VARIABLE& operator *= (const VARIABLE& rhs) {
 		assert(type == IS_VALUE && rhs.type == IS_VALUE);
 		*(VALUE*)val *= *(const VALUE*)rhs.val;
 		return *this;
     }
-    VARIABLE operator /= (const VARIABLE& rhs) {
+    VARIABLE& operator /= (const VARIABLE& rhs) {
 		assert(type == IS_VALUE && rhs.type == IS_VALUE);
 		*(VALUE*)val /= *(const VALUE*)rhs.val;
 		return *this;
     }
-    VARIABLE operator %= (const VARIABLE& rhs) {
+    VARIABLE& operator %= (const VARIABLE& rhs) {
 		assert(type == IS_VALUE && rhs.type == IS_VALUE);
 		*(VALUE*)val %= *(const VALUE*)rhs.val;
 		return *this;
+    }
+    VARIABLE& operator ++ () {
+        assert(type == IS_VALUE);
+        ++*(VALUE*)val;
+        return *this;
+    }
+    VARIABLE operator -- () {
+        assert(type == IS_VALUE);
+        --*(VALUE*)val;
+        return *this;
     }
 
     VARIABLE operator < (const VARIABLE& rhs) const {
@@ -300,6 +310,16 @@ struct CONST_OR_VARIABLE{
     CONST_OR_VARIABLE& operator %= (const CONST_OR_VARIABLE& rhs) {
         assert(left_value && vari);
         *val %= *rhs.val;
+        return *this;
+    }
+    CONST_OR_VARIABLE& operator ++ () {
+        assert(left_value && vari);
+        ++*val;
+        return *this;
+    }
+    CONST_OR_VARIABLE& operator -- () {
+        assert(left_value && vari);
+        --*val;
         return *this;
     }
 

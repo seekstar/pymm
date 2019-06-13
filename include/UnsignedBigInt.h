@@ -20,7 +20,6 @@ struct UnsignedBigInt;
 
 UnsignedBigInt operator + (LL a, const UnsignedBigInt& b);
 UnsignedBigInt operator * (int a, const UnsignedBigInt& b);
-bool operator < (const int& a, const UnsignedBigInt& b);
 
 UnsignedBigInt sqrt(const UnsignedBigInt& x, int m);
 
@@ -75,6 +74,9 @@ struct UnsignedBigInt
                 ans += (LL)s[1] * BASE;
         }
         return ans;
+    }
+    explicit operator int() const {
+        return s.empty() ? 0 : s[0];
     }
     explicit operator double() const
     {
@@ -215,6 +217,27 @@ struct UnsignedBigInt
     friend UnsignedBigInt operator + (LL a, const UnsignedBigInt& b);
 
     //Independent
+    UnsignedBigInt& operator += (int b) {
+        assert(0 <= b && b < BASE);
+        for (size_t i = 0; b; ++i) {
+            if (i == s.size())
+                s.push_back(0);
+            s[i] += b;
+            if (s[i] > BASE) {
+                b = 1;
+                s[i] -= BASE;
+            } else {
+                b = 0;
+            }
+        }
+        return *this;
+    }
+    UnsignedBigInt operator + (int b) {
+        UnsignedBigInt ans = *this;
+        return ans += b;
+    }
+
+    //Independent
     UnsignedBigInt& operator *= (const int& num)
     {
         assert(0 <= num && num < BASE);
@@ -292,24 +315,29 @@ struct UnsignedBigInt
         return cmp(b) >= 0;
     }
 
-    bool operator == (const int b) const
+    bool operator == (int b) const
     {
         return s.size() == 1 ? (s[0] == b) : (s.size() ? 0 : b == 0);
     }
-    bool operator < (const int b) const
+    bool operator < (int b) const
     {
         return s.size() == 1 ? (s[1] < b) : (s.size() ? 0 : b != 0);
     }
-    friend bool operator > (const int b, const UnsignedBigInt& obj);
-    bool operator > (const int b) const {
-        return b < *this;
+    bool operator <= (int rhs) const  {
+        return *this < rhs || *this == rhs;
     }
-    bool operator <= (const int b) const {
-        return *this < b || *this == b;
+    bool operator >= (int rhs) const {
+        return !(*this < rhs);
     }
-    bool operator >= (const int b) const {
-        return *this > b || *this == b;
+    bool operator > (int rhs) const {
+        return !(*this <= rhs);
     }
+
+    friend bool operator < (int lhs, const UnsignedBigInt& rhs);
+    friend bool operator == (int lhs, const UnsignedBigInt& rhs);
+    friend bool operator <= (int lhs, const UnsignedBigInt& rhs);
+    friend bool operator > (int lhs, const UnsignedBigInt& rhs);
+    friend bool operator >= (int lhs, const UnsignedBigInt& rhs);
 
     UnsignedBigInt& operator -= (const UnsignedBigInt& b)
     {
@@ -327,7 +355,7 @@ struct UnsignedBigInt
             else
                 r = 0;
         }
-        while(r)//¿Ï¶¨¿ÉÒÔ£¬²»ÐèÒª i < s.size()
+        while(r)//ï¿½Ï¶ï¿½ï¿½ï¿½ï¿½Ô£ï¿½ï¿½ï¿½ï¿½ï¿½Òª i < s.size()
         {
             s[i]--;
             if(s[i] < 0)
@@ -372,6 +400,8 @@ struct UnsignedBigInt
         UnsignedBigInt ans = *this;
         return ans -= b;
     }
+
+    friend int operator - (int lhs, const UnsignedBigInt& rhs);
 
     UnsignedBigInt& operator /= (int num)
     {

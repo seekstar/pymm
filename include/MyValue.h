@@ -505,6 +505,36 @@ struct VALUE {
 		}
 		return *this;
 	}
+	VALUE& operator ++ () {
+		switch (type) {
+		case IS_INTEGER:
+			++*(IntType*)val;
+			break;
+		case IS_DOUBLE:
+			++*(double*)val;
+			break;
+		case IS_BOOL:
+			//++*(bool*)val;
+			assert(1);	//use of an operand of type ‘bool’ in ‘operator++’ is forbidden in C++1z
+			break;
+		}
+		return *this;
+	}
+	VALUE& operator -- () {
+		switch (type) {
+		case IS_INTEGER:
+			--*(IntType*)val;
+			break;
+		case IS_DOUBLE:
+			--*(double*)val;
+			break;
+		case IS_BOOL:
+			//--*(bool*)val;
+			assert(1);	//use of an operand of type ‘bool’ in ‘operator--’ is forbidden in C++1z
+			break;
+		}
+		return *this;
+	}
 
 	VALUE operator < (const VALUE& rhs) {
 		static VALUE ans;

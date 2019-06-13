@@ -49,6 +49,7 @@ void Init(void){
     numOfOperands[MINUS] = 1;
     associative[MINUS] = RIGHT_ASSOCIATIVE;
 
+
     operator_code["+="] = ADD_EQ;
     priority[ADD_EQ] = 14;
     numOfOperands[ADD_EQ] = 2;
@@ -73,6 +74,16 @@ void Init(void){
     priority[MODULUS_EQ] = 14;
     numOfOperands[MODULUS_EQ] = 2;
     associative[MODULUS_EQ] = RIGHT_ASSOCIATIVE;
+
+    operator_code["++"] = INC;
+    priority[INC] = 2;
+    numOfOperands[INC] = 1;
+    associative[INC] = RIGHT_ASSOCIATIVE;
+
+    operator_code["--"] = DEC;
+    priority[DEC] = 2;
+    numOfOperands[DEC] = 1;
+    associative[DEC] = RIGHT_ASSOCIATIVE;
 
 
     operator_code["("] = LEFT_PARENTHESIS;
@@ -234,6 +245,7 @@ const char* OperatorName(OPERATOR op)
         return "/\\";
     case ASSIGN:
         return "(=)";
+
     case ADD:
         return "(+)";
     case ADD_EQ:
@@ -256,6 +268,11 @@ const char* OperatorName(OPERATOR op)
         return "(%=)";
     case MINUS:
         return "(-)";
+    case INC:
+        return "(++)";
+    case DEC:
+        return "(--)";
+
     case LESS:
         return "(<)";
     case LESS_EQ:
@@ -265,13 +282,24 @@ const char* OperatorName(OPERATOR op)
     case GREATER_EQ:
         return "(>=)";
     case EQUAL:
-        return "==";
+        return "(==)";
     case NOT_EQUAL:
-        return "!=";
+        return "(!=)";
+
     case AND:
-        return "&&";
+        return "(&&)";
     case OR:
-        return "||";
+        return "(||)";
+    case NOT:
+        return "(!)";
+
+    case BIT_AND:
+        return "(&)";
+    case BIT_OR:
+        return "(|)";
+    case BIT_NOT:
+        return "(~)";
+
     case LEFT_PARENTHESIS:
         return "(";
     case RIGHT_PARENTHESIS:
@@ -572,6 +600,16 @@ bool Parsing_IS_OPERATOR(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>
             tmp->op() = MINUS;
             operator_sta.push(tmp);
             break;
+        case INC:
+        case DEC:
+            if (operand) {
+                OperandBecomeLeftChild(op, operand);
+            } else {
+                tmp = new NODE(IS_OPERATOR);
+                tmp->op() = op;
+                operator_sta.push(tmp);
+            }
+            break;
         default:
             ErrMsg(info, "Unexpected operator code ", op);
             break;
@@ -808,6 +846,10 @@ bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_
         FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
         ans = ans1 % ans2;
         break;
+    case MINUS:
+        FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
+        ans = -ans;
+        break;
 
     case ADD_EQ:
         FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
@@ -834,9 +876,13 @@ bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_
         FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
         ans %= ans2;
         break;
-    case MINUS:
+    case INC:
         FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
-        ans = -ans;
+        ++ans;
+        break;
+    case DEC:
+        FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
+        --ans;
         break;
 
     case LESS:
