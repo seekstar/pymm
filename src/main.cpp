@@ -6,7 +6,7 @@ using namespace std;
 
 int main()
 {
-    PYMM pymm;
+    PYMM pymm; 
     ostringstream info;
     string in;
 

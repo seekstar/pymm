@@ -101,9 +101,13 @@ struct VARIABLE {
 		assert(type == IS_VALUE && rhs.type == IS_VALUE);
         return VARIABLE(*(VALUE*)val % *(VALUE*)rhs.val);
     }
-    VARIABLE operator - (void) {
+    VARIABLE operator - () {
         assert(type == IS_VALUE);
         return VARIABLE(-*(VALUE*)val);
+    }
+    VARIABLE fra_div(const VARIABLE& rhs) const {
+        assert(type == IS_VALUE && rhs.type == IS_VALUE);
+        return VARIABLE(((VALUE*)val)->fra_div(*(VALUE*)rhs.val));
     }
 
     VARIABLE& operator += (const VARIABLE& rhs) {
@@ -139,6 +143,11 @@ struct VARIABLE {
     VARIABLE operator -- () {
         assert(type == IS_VALUE);
         --*(VALUE*)val;
+        return *this;
+    }
+    VARIABLE& fra_div_eq(const VARIABLE& rhs) {
+        assert(type == IS_VALUE && rhs.type == IS_VALUE);
+        ((VALUE*)val)->fra_div_eq(*(const VALUE*)rhs.val);
         return *this;
     }
 
@@ -298,6 +307,12 @@ struct CONST_OR_VARIABLE{
         --*this;
         return ans;
     }
+    CONST_OR_VARIABLE fra_div(const CONST_OR_VARIABLE& rhs) const {
+        static CONST_OR_VARIABLE ans;
+        ans.Init_new(false, false);
+        *ans.val = val->fra_div(*rhs.val);
+        return ans;
+    }
 
     CONST_OR_VARIABLE& operator += (const CONST_OR_VARIABLE& rhs) {
         assert(left_value && vari);
@@ -334,8 +349,10 @@ struct CONST_OR_VARIABLE{
         --*val;
         return *this;
     }
-    CONST_OR_VARIABLE fra_div(const CONST_OR_VARIABLE& rhs) const {
-        
+    CONST_OR_VARIABLE& fra_div_eq(const CONST_OR_VARIABLE& rhs) {
+        assert(left_value && vari);
+        val->fra_div_eq(*rhs.val);
+        return *this;
     }
 
 	CONST_OR_VARIABLE operator < (const CONST_OR_VARIABLE& rhs) const {

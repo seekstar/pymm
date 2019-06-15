@@ -10,12 +10,11 @@ using namespace std;
 typedef SignedBigInt INT;
 
 class FRACTION{
-
-private:
+	
+public:
 	INT numerator;
 	INT denominator;
 	
-public:
     FRACTION(){};
 	explicit FRACTION(const INT& x);
 	explicit FRACTION(const INT& numerator, const INT& denominator);

@@ -172,6 +172,21 @@ struct VALUE {
 		}
 		return *this;
 	}
+	void CleanFraction() {
+		assert(type == IS_FRACTION);
+		FRACTION& v = *(FRACTION*)val;
+		if (v.denominator == 1) {
+			IntType* tmp = new IntType(v.numerator);
+			delete (FRACTION*)val;
+			val = tmp;
+			type = IS_INTEGER;
+		}
+	}
+	void GetFractionThenClean(const FRACTION& v) {
+		type = IS_FRACTION;
+		val = new FRACTION(v);
+		CleanFraction();
+	}
 	VALUE operator + (const VALUE& rhs) const {
 		static VALUE ans;
 		switch (type) {
@@ -190,8 +205,7 @@ struct VALUE {
 				ans.val = new IntType(*(IntType*)val + (int)*(bool*)rhs.val);
 				break;
 			case IS_FRACTION:
-				ans.type = IS_FRACTION;
-				ans.val = new FRACTION(*(IntType*)val + *(FRACTION*)rhs.val);
+				ans.GetFractionThenClean(*(IntType*)val + *(FRACTION*)rhs.val);
 				break;
             }
             break;
@@ -225,8 +239,7 @@ struct VALUE {
 				ans.val = new bool(*(bool*)val + *(bool*)rhs.val);
 				break;
 			case IS_FRACTION:
-				ans.type = IS_FRACTION;
-				ans.val = new FRACTION((FRACTION)(IntType)(int)*(bool*)val + *(FRACTION*)rhs.val);
+				ans.GetFractionThenClean((FRACTION)(IntType)(int)*(bool*)val + *(FRACTION*)rhs.val);
 				break;
 			}
 			break;
@@ -238,8 +251,7 @@ struct VALUE {
 				ans = rhs + *this;
 				break;
 			case IS_FRACTION:
-				ans.type = IS_FRACTION;
-				ans.val = new FRACTION(*(FRACTION*)val + *(FRACTION*)rhs.val);
+				ans.GetFractionThenClean(*(FRACTION*)val + *(FRACTION*)rhs.val);
 				break;
 			}
 			break;
@@ -267,9 +279,7 @@ struct VALUE {
 				*(IntType*)ans.val = *(IntType*)val - (int)*(bool*)rhs.val;
 				break;
 			case IS_FRACTION:
-				ans.type = IS_FRACTION;
-				ans.val = new FRACTION;
-				*(FRACTION*)ans.val = *(IntType*)val - *(FRACTION*)rhs.val;
+				ans.GetFractionThenClean(*(IntType*)val - *(FRACTION*)rhs.val);
 				break;
             }
             break;
@@ -315,18 +325,14 @@ struct VALUE {
 				*(bool*)ans.val = *(bool*)val - *(bool*)rhs.val;
 				break;
 			case IS_FRACTION:
-				ans.type = IS_FRACTION;
-				ans.val = new FRACTION;
-				*(FRACTION*)ans.val = (FRACTION)(IntType)(int)*(bool*)val - *(FRACTION*)rhs.val;
+				ans.GetFractionThenClean((FRACTION)(IntType)(int)*(bool*)val - *(FRACTION*)rhs.val);
 				break;
 			}
 			break;
 		case IS_FRACTION:
 			switch (rhs.type) {
 			case IS_INTEGER:
-				ans.type = IS_FRACTION;
-				ans.val = new FRACTION;
-				*(FRACTION*)ans.val = *(FRACTION*)val - *(FRACTION*)rhs.val;
+				ans.GetFractionThenClean(*(FRACTION*)val - *(FRACTION*)rhs.val);
 				break;
 			case IS_DOUBLE:
 				ans.type = IS_DOUBLE;
@@ -334,14 +340,10 @@ struct VALUE {
 				*(double*)ans.val = (double)*(FRACTION*)val - *(double*)rhs.val;
 				break;
 			case IS_BOOL:
-				ans.type = IS_FRACTION;
-				ans.val = new FRACTION;
-				*(FRACTION*)ans.val = *(FRACTION*)val - (IntType)(int)*(bool*)rhs.val;
+				ans.GetFractionThenClean(*(FRACTION*)val - (IntType)(int)*(bool*)rhs.val);
 				break;
 			case IS_FRACTION:
-				ans.type = IS_FRACTION;
-				ans.val = new FRACTION;
-				*(FRACTION*)ans.val = *(FRACTION*)val - *(FRACTION*)rhs.val;
+				ans.GetFractionThenClean(*(FRACTION*)val - *(FRACTION*)rhs.val);
 				break;
 			}
 			break;
@@ -369,9 +371,7 @@ struct VALUE {
 				*(IntType*)ans.val = *(IntType*)val * (int)*(bool*)rhs.val;
 				break;
 			case IS_FRACTION:
-				ans.type = IS_FRACTION;
-				ans.val = new FRACTION;
-				*(FRACTION*)ans.val = *(IntType*)val * *(FRACTION*)rhs.val;
+				ans.GetFractionThenClean(*(IntType*)val * *(FRACTION*)rhs.val);
 				break;
             }
             break;
@@ -409,9 +409,7 @@ struct VALUE {
 				*(bool*)ans.val = *(bool*)val && *(bool*)rhs.val;
 				break;
 			case IS_FRACTION:
-				ans.type = IS_FRACTION;
-				ans.val = new FRACTION;
-				*(FRACTION*)ans.val = (IntType)(int)*(bool*)val * *(FRACTION*)rhs.val;
+				ans.GetFractionThenClean((IntType)(int)*(bool*)val * *(FRACTION*)rhs.val);
 				break;
 			}
 			break;
@@ -423,9 +421,7 @@ struct VALUE {
 				ans = rhs * *this;
 				break;
 			case IS_FRACTION:
-				ans.type = IS_FRACTION;
-				ans.val = new FRACTION;
-				*(FRACTION*)ans.val = *(FRACTION*)val * *(FRACTION*)rhs.val;
+				ans.GetFractionThenClean(*(FRACTION*)val * *(FRACTION*)rhs.val);
 				break;
 			}
 			break;
@@ -453,9 +449,7 @@ struct VALUE {
 				*(IntType*)ans.val = *(IntType*)val / (int)*(bool*)rhs.val;
 				break;
 			case IS_FRACTION:
-				ans.type = IS_FRACTION;
-				ans.val = new FRACTION;
-				*(FRACTION*)ans.val = *(IntType*)val / *(FRACTION*)rhs.val;
+				ans.GetFractionThenClean(*(IntType*)val / *(FRACTION*)rhs.val);
 				break;
             }
             break;
@@ -501,18 +495,14 @@ struct VALUE {
 				*(bool*)ans.val = *(bool*)val / *(bool*)rhs.val;
 				break;
 			case IS_FRACTION:
-				ans.type = IS_FRACTION;
-				ans.val = new FRACTION;
-				*(FRACTION*)ans.val = (FRACTION)(IntType)(int)*(bool*)val / *(FRACTION*)rhs.val;
+				ans.GetFractionThenClean((FRACTION)(IntType)(int)*(bool*)val / *(FRACTION*)rhs.val);
 				break;
 			}
 			break;
 		case IS_FRACTION:
 			switch (rhs.type) {
 			case IS_INTEGER:
-				ans.type = IS_FRACTION;
-				ans.val = new FRACTION;
-				*(FRACTION*)ans.val = *(FRACTION*)val / *(FRACTION*)rhs.val;
+				ans.GetFractionThenClean(*(FRACTION*)val / *(FRACTION*)rhs.val);
 				break;
 			case IS_DOUBLE:
 				ans.type = IS_DOUBLE;
@@ -520,14 +510,10 @@ struct VALUE {
 				*(double*)ans.val = (double)*(FRACTION*)val / *(double*)rhs.val;
 				break;
 			case IS_BOOL:
-				ans.type = IS_FRACTION;
-				ans.val = new FRACTION;
-				*(FRACTION*)ans.val = *(FRACTION*)val / (IntType)(int)*(bool*)rhs.val;
+				ans.GetFractionThenClean(*(FRACTION*)val / (IntType)(int)*(bool*)rhs.val);
 				break;
 			case IS_FRACTION:
-				ans.type = IS_FRACTION;
-				ans.val = new FRACTION;
-				*(FRACTION*)ans.val = *(FRACTION*)val / *(FRACTION*)rhs.val;
+				ans.GetFractionThenClean(*(FRACTION*)val / *(FRACTION*)rhs.val);
 				break;
 			}
 			break;
@@ -628,12 +614,19 @@ struct VALUE {
 			*(bool*)ans.val = -*(bool*)val;
 			break;
 		case IS_FRACTION:
-			ans.type = IS_FRACTION;
-			ans.val = new FRACTION;
-			*(FRACTION*)ans.val = -*(FRACTION*)val;
+			ans.GetFractionThenClean(-*(FRACTION*)val);
 			break;
 		}
 		return ans;
+	}
+	VALUE fra_div(const VALUE& rhs) const {
+		if (type == IS_INTEGER && rhs.type == IS_INTEGER) {
+			static VALUE ans;
+			ans.GetFractionThenClean(FRACTION(*(IntType*)val, *(IntType*)rhs.val));
+			return ans;
+		} else {
+			return *this / rhs;
+		}
 	}
 
 	VALUE& operator += (const VALUE& rhs) {
@@ -653,6 +646,7 @@ struct VALUE {
 			case IS_FRACTION:
 				ChangeType(IS_FRACTION);
 				*(FRACTION*)val += *(FRACTION*)rhs.val;
+				CleanFraction();
 				break;
 			}
 			break;
@@ -679,6 +673,7 @@ struct VALUE {
 			switch (rhs.type) {
 			case IS_INTEGER:
 				*(FRACTION*)val += *(FRACTION*)rhs.val;
+				CleanFraction();
 				break;
 			case IS_DOUBLE:
 				ChangeType(IS_DOUBLE);
@@ -686,9 +681,11 @@ struct VALUE {
 				break;
 			case IS_BOOL:
 				*(FRACTION*)val += (IntType)(int)*(bool*)rhs.val;
+				CleanFraction();
 				break;
 			case IS_FRACTION:
 				*(FRACTION*)val += *(FRACTION*)rhs.val;
+				CleanFraction();
 				break;
 			}
 			break;
@@ -712,6 +709,7 @@ struct VALUE {
 			case IS_FRACTION:
 				ChangeType(IS_FRACTION);
 				*(FRACTION*)val -= *(FRACTION*)rhs.val;
+				CleanFraction();
 				break;
 			}
 			break;
@@ -738,6 +736,7 @@ struct VALUE {
 			switch (rhs.type) {
 			case IS_INTEGER:
 				*(FRACTION*)val -= *(FRACTION*)rhs.val;
+				CleanFraction();
 				break;
 			case IS_DOUBLE:
 				ChangeType(IS_DOUBLE);
@@ -745,9 +744,11 @@ struct VALUE {
 				break;
 			case IS_BOOL:
 				*(FRACTION*)val -= (IntType)(int)*(bool*)rhs.val;
+				CleanFraction();
 				break;
 			case IS_FRACTION:
 				*(FRACTION*)val -= *(FRACTION*)rhs.val;
+				CleanFraction();
 				break;
 			}
 			break;
@@ -771,6 +772,7 @@ struct VALUE {
 			case IS_FRACTION:
 				ChangeType(IS_FRACTION);
 				*(FRACTION*)val *= *(FRACTION*)rhs.val;
+				CleanFraction();
 				break;
 			}
 			break;
@@ -797,6 +799,7 @@ struct VALUE {
 			switch (rhs.type) {
 			case IS_INTEGER:
 				*(FRACTION*)val *= *(FRACTION*)rhs.val;
+				CleanFraction();
 				break;
 			case IS_DOUBLE:
 				ChangeType(IS_DOUBLE);
@@ -804,9 +807,11 @@ struct VALUE {
 				break;
 			case IS_BOOL:
 				*(FRACTION*)val *= (IntType)(int)*(bool*)rhs.val;
+				CleanFraction();
 				break;
 			case IS_FRACTION:
 				*(FRACTION*)val *= *(FRACTION*)rhs.val;
+				CleanFraction();
 				break;
 			}
 			break;
@@ -830,6 +835,7 @@ struct VALUE {
 			case IS_FRACTION:
 				ChangeType(IS_FRACTION);
 				*(FRACTION*)val /= *(FRACTION*)rhs.val;
+				CleanFraction();
 				break;
 			}
 			break;
@@ -856,6 +862,7 @@ struct VALUE {
 			switch (rhs.type) {
 			case IS_INTEGER:
 				*(FRACTION*)val /= *(FRACTION*)rhs.val;
+				CleanFraction();
 				break;
 			case IS_DOUBLE:
 				ChangeType(IS_DOUBLE);
@@ -863,9 +870,11 @@ struct VALUE {
 				break;
 			case IS_BOOL:
 				*(FRACTION*)val /= (IntType)(int)*(bool*)rhs.val;
+				CleanFraction();
 				break;
 			case IS_FRACTION:
 				*(FRACTION*)val /= *(FRACTION*)rhs.val;
+				CleanFraction();
 				break;
 			}
 			break;
@@ -928,6 +937,7 @@ struct VALUE {
 			break;
 		case IS_FRACTION:
 			*(FRACTION*)val += (FRACTION)(IntType)1;
+			CleanFraction();
 			break;
 		}
 		return *this;
@@ -946,9 +956,21 @@ struct VALUE {
 			break;
 		case IS_FRACTION:
 			*(FRACTION*)val -= (FRACTION)(IntType)1;
+			CleanFraction();
 			break;
 		}
 		return *this;
+	}
+	VALUE& fra_div_eq(const VALUE& rhs) {
+		if (type == IS_INTEGER && rhs.type == IS_INTEGER) {
+			FRACTION* tmp = new FRACTION(*(IntType*)val, *(IntType*)rhs.val);
+			del();
+			type = IS_FRACTION;
+			val = tmp;
+			return *this;
+		} else {
+			return *this /= rhs;
+		}
 	}
 
 	VALUE operator < (const VALUE& rhs) const {

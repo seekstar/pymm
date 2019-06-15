@@ -49,6 +49,11 @@ void Init(void){
     numOfOperands[MINUS] = 1;
     associative[MINUS] = RIGHT_ASSOCIATIVE;
 
+    operator_code["//"] = FRA_DIV;
+    priority[FRA_DIV] = 3;
+    numOfOperands[FRA_DIV] = 2;
+    associative[FRA_DIV] = LEFT_ASSOCIATIVE;
+
 
     operator_code["+="] = ADD_EQ;
     priority[ADD_EQ] = 14;
@@ -84,6 +89,11 @@ void Init(void){
     priority[DEC] = 2;
     numOfOperands[DEC] = 1;
     associative[DEC] = RIGHT_ASSOCIATIVE;
+
+    operator_code["//="] = FRA_DIV_EQ;
+    priority[FRA_DIV_EQ] = 14;
+    numOfOperands[FRA_DIV_EQ] = 2;
+    associative[FRA_DIV_EQ] = RIGHT_ASSOCIATIVE;
 
 
     operator_code["("] = LEFT_PARENTHESIS;
@@ -272,8 +282,10 @@ const char* OperatorName(OPERATOR op)
         return "(++)";
     case DEC:
         return "(--)";
-    case FRA_DIV：
+    case FRA_DIV:
         return "(//)";
+    case FRA_DIV_EQ:
+        return "(//=)";
 
     case LESS:
         return "(<)";
@@ -859,6 +871,11 @@ bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_
         FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
         ans = ans1 % ans2;
         break;
+    case FRA_DIV:
+        FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
+        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
+        ans = ans1.fra_div(ans2);
+        break;
     case MINUS:
         FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
         ans = -ans;
@@ -888,6 +905,11 @@ bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_
         FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
         FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
         ans %= ans2;
+        break;
+    case FRA_DIV_EQ:
+        FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
+        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
+        ans.fra_div_eq(ans2);
         break;
     case INC:
         if (root->child[0]) {   //front incrimental operator
