@@ -1,11 +1,11 @@
 #include "fraction.h"
 
-FRACTION:: FRACTION(const INT& numerator, const INT& denominator) {
+FRACTION:: FRACTION(const IntType& numerator, const IntType& denominator) {
 	this->numerator = numerator;
 	this->denominator = denominator;
 	fractionReduction();
 }
-FRACTION::FRACTION(const INT& x) : FRACTION::FRACTION(x, INT(1)) {}
+FRACTION::FRACTION(const IntType& x) : FRACTION::FRACTION(x, IntType(1)) {}
 
 FRACTION& FRACTION::fractionReduction() {
 	if (denominator.is_minus) {
@@ -37,32 +37,32 @@ FRACTION FRACTION::operator - () const {
 	return FRACTION(-numerator, denominator);
 }
 
-FRACTION FRACTION::operator + (const INT& rhs) const {
+FRACTION FRACTION::operator + (const IntType& rhs) const {
 	return *this + FRACTION(rhs);
 }
-FRACTION FRACTION::operator - (const INT& rhs) const {
+FRACTION FRACTION::operator - (const IntType& rhs) const {
 	return *this - FRACTION(rhs);
 }
-FRACTION FRACTION::operator * (const INT& rhs) const {
+FRACTION FRACTION::operator * (const IntType& rhs) const {
 	return *this * FRACTION(rhs);
 }
-FRACTION FRACTION::operator / (const INT& rhs) const {
+FRACTION FRACTION::operator / (const IntType& rhs) const {
 	return *this / FRACTION(rhs);
 }
 
-FRACTION operator+(const INT& x, const FRACTION& rhs)
+FRACTION operator+(const IntType& x, const FRACTION& rhs)
 {
 	return FRACTION(x) + rhs;
 }
-FRACTION operator-(const INT& x, const FRACTION& rhs)
+FRACTION operator-(const IntType& x, const FRACTION& rhs)
 {
 	return FRACTION(x) - rhs;
 }
-FRACTION operator*(const INT& x, const FRACTION& rhs)
+FRACTION operator*(const IntType& x, const FRACTION& rhs)
 {
 	return FRACTION(x) * rhs;
 }
-FRACTION operator/(const INT& x, const FRACTION& rhs)
+FRACTION operator/(const IntType& x, const FRACTION& rhs)
 {
 	return FRACTION(x) / rhs;
 }
@@ -80,16 +80,16 @@ FRACTION& FRACTION::operator /= (const FRACTION& rhs) {
 	return *this = *this / rhs;
 }
 
-FRACTION& FRACTION::operator += (const INT& rhs) {
+FRACTION& FRACTION::operator += (const IntType& rhs) {
 	return *this = *this + rhs;
 }
-FRACTION& FRACTION::operator -= (const INT& rhs) {
+FRACTION& FRACTION::operator -= (const IntType& rhs) {
 	return *this = *this - rhs;
 }
-FRACTION& FRACTION::operator *= (const INT& rhs) {
+FRACTION& FRACTION::operator *= (const IntType& rhs) {
 	return *this = *this * rhs;
 }
-FRACTION& FRACTION::operator /= (const INT& rhs) {
+FRACTION& FRACTION::operator /= (const IntType& rhs) {
 	return *this = *this / rhs;
 }
 
@@ -112,41 +112,41 @@ bool FRACTION::operator != (const FRACTION& rhs) const {
     return numerator*rhs.denominator != rhs.numerator*denominator;
 }
 
-bool FRACTION::operator < (const INT& rhs) const {
+bool FRACTION::operator < (const IntType& rhs) const {
     return *this < (FRACTION)rhs;
 }
-bool FRACTION::operator > (const INT& rhs) const {
+bool FRACTION::operator > (const IntType& rhs) const {
     return *this > (FRACTION)rhs;
 }
-bool FRACTION::operator == (const INT& rhs) const {
+bool FRACTION::operator == (const IntType& rhs) const {
     return *this == (FRACTION)rhs;
 }
-bool FRACTION::operator <= (const INT& rhs) const {
+bool FRACTION::operator <= (const IntType& rhs) const {
     return *this <= (FRACTION)rhs;
 }
-bool FRACTION::operator >= (const INT& rhs) const {
+bool FRACTION::operator >= (const IntType& rhs) const {
     return *this >= (FRACTION)rhs;
 }
-bool FRACTION::operator != (const INT& rhs) const {
+bool FRACTION::operator != (const IntType& rhs) const {
     return *this != (FRACTION)rhs;
 }
 
-bool operator < (const INT& lhs, const FRACTION& rhs) {
+bool operator < (const IntType& lhs, const FRACTION& rhs) {
     return lhs * rhs.denominator < rhs.numerator;
 }
-bool operator > (const INT& lhs, const FRACTION& rhs) {
+bool operator > (const IntType& lhs, const FRACTION& rhs) {
     return lhs * rhs.denominator > rhs.numerator;
 }
-bool operator == (const INT& lhs, const FRACTION& rhs) {
+bool operator == (const IntType& lhs, const FRACTION& rhs) {
     return lhs * rhs.denominator == rhs.numerator;
 }
-bool operator <= (const INT& lhs, const FRACTION& rhs) {
+bool operator <= (const IntType& lhs, const FRACTION& rhs) {
     return lhs * rhs.denominator <= rhs.numerator;
 }
-bool operator >= (const INT& lhs, const FRACTION& rhs) {
+bool operator >= (const IntType& lhs, const FRACTION& rhs) {
     return lhs * rhs.denominator >= rhs.numerator;
 }
-bool operator != (const INT& lhs, const FRACTION& rhs) {
+bool operator != (const IntType& lhs, const FRACTION& rhs) {
     return lhs * rhs.denominator != rhs.numerator;
 }
 
@@ -156,7 +156,7 @@ FRACTION::operator double() const
 	return (double)numerator / (double)denominator;
 }
 
-FRACTION::operator INT() const {
+FRACTION::operator IntType() const {
 	return numerator / denominator;
 }
 

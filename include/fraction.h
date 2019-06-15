@@ -7,17 +7,17 @@
 
 using namespace std;
 
-typedef SignedBigInt INT;
+typedef SignedBigInt IntType;
 
 class FRACTION{
 	
 public:
-	INT numerator;
-	INT denominator;
+	IntType numerator;
+	IntType denominator;
 	
     FRACTION(){};
-	explicit FRACTION(const INT& x);
-	explicit FRACTION(const INT& numerator, const INT& denominator);
+	explicit FRACTION(const IntType& x);
+	explicit FRACTION(const IntType& numerator, const IntType& denominator);
 	friend istream& operator>>(istream &in,FRACTION &x);
     friend ostream& operator<<(ostream &out,FRACTION x);
 
@@ -27,28 +27,28 @@ public:
 	FRACTION operator / (const FRACTION& rhs) const;
 	FRACTION operator - () const;
 
-	FRACTION operator + (const INT& rhs) const;
-	FRACTION operator - (const INT& rhs) const;
-	FRACTION operator * (const INT& rhs) const;
-	FRACTION operator / (const INT& rhs) const;
+	FRACTION operator + (const IntType& rhs) const;
+	FRACTION operator - (const IntType& rhs) const;
+	FRACTION operator * (const IntType& rhs) const;
+	FRACTION operator / (const IntType& rhs) const;
 
-	friend FRACTION operator + (const INT& x, const FRACTION& rhs);
-	friend FRACTION operator - (const INT& x, const FRACTION& rhs);
-	friend FRACTION operator * (const INT& x, const FRACTION& rhs);
-	friend FRACTION operator / (const INT& x, const FRACTION& rhs);
+	friend FRACTION operator + (const IntType& x, const FRACTION& rhs);
+	friend FRACTION operator - (const IntType& x, const FRACTION& rhs);
+	friend FRACTION operator * (const IntType& x, const FRACTION& rhs);
+	friend FRACTION operator / (const IntType& x, const FRACTION& rhs);
 
 	FRACTION& operator += (const FRACTION& rhs);
 	FRACTION& operator -= (const FRACTION& rhs);
 	FRACTION& operator *= (const FRACTION& rhs);
 	FRACTION& operator /= (const FRACTION& rhs);
 
-	FRACTION& operator += (const INT& rhs);
-	FRACTION& operator -= (const INT& rhs);
-	FRACTION& operator *= (const INT& rhs);
-	FRACTION& operator /= (const INT& rhs);
+	FRACTION& operator += (const IntType& rhs);
+	FRACTION& operator -= (const IntType& rhs);
+	FRACTION& operator *= (const IntType& rhs);
+	FRACTION& operator /= (const IntType& rhs);
 	
 	explicit operator double() const;
-	explicit operator INT() const;
+	explicit operator IntType() const;
 	explicit operator bool() const;
 
 	bool operator>(const FRACTION& rhs) const;
@@ -58,19 +58,19 @@ public:
     bool operator==(const FRACTION& rhs) const;
     bool operator!=(const FRACTION& rhs) const;
 
-	bool operator>(const INT& rhs) const;
-	bool operator>=(const INT& rhs) const;
-    bool operator<(const INT& rhs) const;
-    bool operator<=(const INT& rhs) const;
-    bool operator==(const INT& rhs) const;
-    bool operator!=(const INT& rhs) const;
+	bool operator>(const IntType& rhs) const;
+	bool operator>=(const IntType& rhs) const;
+    bool operator<(const IntType& rhs) const;
+    bool operator<=(const IntType& rhs) const;
+    bool operator==(const IntType& rhs) const;
+    bool operator!=(const IntType& rhs) const;
 
-	friend bool operator < (const INT& lhs, const FRACTION& rhs);
-	friend bool operator > (const INT& lhs, const FRACTION& rhs);
-	friend bool operator == (const INT& lhs, const FRACTION& rhs);
-	friend bool operator <= (const INT& lhs, const FRACTION& rhs);
-	friend bool operator >= (const INT& lhs, const FRACTION& rhs);
-	friend bool operator != (const INT& lhs, const FRACTION& rhs);
+	friend bool operator < (const IntType& lhs, const FRACTION& rhs);
+	friend bool operator > (const IntType& lhs, const FRACTION& rhs);
+	friend bool operator == (const IntType& lhs, const FRACTION& rhs);
+	friend bool operator <= (const IntType& lhs, const FRACTION& rhs);
+	friend bool operator >= (const IntType& lhs, const FRACTION& rhs);
+	friend bool operator != (const IntType& lhs, const FRACTION& rhs);
 	
 
 	FRACTION& fractionReduction();                      //Լ��

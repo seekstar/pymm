@@ -39,6 +39,11 @@ void Init(void){
     numOfOperands[DIV] = 2;
     associative[DIV] = LEFT_ASSOCIATIVE;
 
+    operator_code["//"] = FLOOR_DIV;
+    priority[FLOOR_DIV] = 3;
+    numOfOperands[FLOOR_DIV] = 2;
+    associative[FLOOR_DIV] = LEFT_ASSOCIATIVE;
+
     operator_code["%"] = MODULUS;
     priority[MODULUS] = 3;
     numOfOperands[MODULUS] = 2;
@@ -48,11 +53,6 @@ void Init(void){
     priority[MINUS] = 2;
     numOfOperands[MINUS] = 1;
     associative[MINUS] = RIGHT_ASSOCIATIVE;
-
-    operator_code["//"] = FRA_DIV;
-    priority[FRA_DIV] = 3;
-    numOfOperands[FRA_DIV] = 2;
-    associative[FRA_DIV] = LEFT_ASSOCIATIVE;
 
 
     operator_code["+="] = ADD_EQ;
@@ -75,6 +75,11 @@ void Init(void){
     numOfOperands[DIV_EQ] = 2;
     associative[DIV_EQ] = RIGHT_ASSOCIATIVE;
 
+    operator_code["//="] = FLOOR_DIV_EQ;
+    priority[FLOOR_DIV_EQ] = 14;
+    numOfOperands[FLOOR_DIV_EQ] = 2;
+    associative[FLOOR_DIV_EQ] = RIGHT_ASSOCIATIVE;
+
     operator_code["%="] = MODULUS_EQ;
     priority[MODULUS_EQ] = 14;
     numOfOperands[MODULUS_EQ] = 2;
@@ -89,11 +94,6 @@ void Init(void){
     priority[DEC] = 2;
     numOfOperands[DEC] = 1;
     associative[DEC] = RIGHT_ASSOCIATIVE;
-
-    operator_code["//="] = FRA_DIV_EQ;
-    priority[FRA_DIV_EQ] = 14;
-    numOfOperands[FRA_DIV_EQ] = 2;
-    associative[FRA_DIV_EQ] = RIGHT_ASSOCIATIVE;
 
 
     operator_code["("] = LEFT_PARENTHESIS;
@@ -272,6 +272,10 @@ const char* OperatorName(OPERATOR op)
         return "(/)";
     case DIV_EQ:
         return "(/=)";
+    case FLOOR_DIV:
+        return "(//)";
+    case FLOOR_DIV_EQ:
+        return "(//=)";
     case MODULUS:
         return "(%)";
     case MODULUS_EQ:
@@ -282,10 +286,6 @@ const char* OperatorName(OPERATOR op)
         return "(++)";
     case DEC:
         return "(--)";
-    case FRA_DIV:
-        return "(//)";
-    case FRA_DIV_EQ:
-        return "(//=)";
 
     case LESS:
         return "(<)";
@@ -503,11 +503,11 @@ bool Parsing(NODE*& root, vector<StrExpr>::iterator& now, ostream& info) {
 bool Parsing_dfs(NODE*& operand, vector<StrExpr>::iterator& now, bool& finish, ostream& info) {
     stack<NODE*>operator_sta;
 	bool need_output = false;
-    ERROR_TYPE error_type = NO_ERROR;
+    ERROR_TYPE error_type = THERE_IS_NO_ERROR;
 
 	bool needReturn = false;
     operand = NULL;
-    for (; !needReturn && NO_ERROR == error_type && now->type != IS_NIL; ++now) {
+    for (; !needReturn && THERE_IS_NO_ERROR == error_type && now->type != IS_NIL; ++now) {
         switch (now->type) {
         case IS_CONSTANT:
             Parsing_IS_CONSTANT(operand, error_type, now);
@@ -536,7 +536,7 @@ bool Parsing_dfs(NODE*& operand, vector<StrExpr>::iterator& now, bool& finish, o
     }
     PopAllOperators(operator_sta, operand);
 
-    if (NO_ERROR != error_type) {
+    if (THERE_IS_NO_ERROR != error_type) {
         --now;
         PrintErrorMsg(error_type, now->name, info);
     }
@@ -544,7 +544,7 @@ bool Parsing_dfs(NODE*& operand, vector<StrExpr>::iterator& now, bool& finish, o
     if (operand && need_output) {
         operand->output = true;
     }
-    return error_type == NO_ERROR ? SUCCEED : FAIL;
+    return error_type == THERE_IS_NO_ERROR ? SUCCEED : FAIL;
 }
 
 void PrintErrorMsg(ERROR_TYPE type, const string& name, ostream& info) {
@@ -864,17 +864,17 @@ bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_
     case DIV:
         FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
         FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
+        ans = ans1.fra_div(ans2);
+        break;
+    case FLOOR_DIV:
+        FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
+        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
         ans = ans1 / ans2;
         break;
     case MODULUS:
         FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
         FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
         ans = ans1 % ans2;
-        break;
-    case FRA_DIV:
-        FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], false, variable_table, info));
-        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
-        ans = ans1.fra_div(ans2);
         break;
     case MINUS:
         FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
@@ -899,17 +899,17 @@ bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_
     case DIV_EQ:
         FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
         FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
+        ans.fra_div_eq(ans2);
+        break;
+    case FLOOR_DIV_EQ:
+        FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
+        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
         ans /= ans2;
         break;
     case MODULUS_EQ:
         FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
         FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
         ans %= ans2;
-        break;
-    case FRA_DIV_EQ:
-        FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
-        FAIL_THEN_RETURN(CalcByTree(ans2, root->child[1], false, variable_table, info));
-        ans.fra_div_eq(ans2);
         break;
     case INC:
         if (root->child[0]) {   //front incrimental operator

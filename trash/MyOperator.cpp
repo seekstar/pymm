@@ -19,7 +19,7 @@ CONST_OR_VARIABLE IntType_IntType_Op(IntType& lhs, IntType& rhs, OPERATOR op)
     	ans.val = new IntType;
         *ans.val = lhs * rhs;
         break;
-    case DIV:
+    case FLOOR_DIV:
         ans.type = IS_DOUBLE;
     	ans.val = new double;
         *ans.val = (double)lhs / (double)rhs;
@@ -48,7 +48,7 @@ double DoubleOp(double lhs, double rhs, OPERATOR op)
     case MUL:
         ans = lhs * rhs;
         break;
-    case DIV:
+    case FLOOR_DIV:
         ans = lhs / rhs;
         break;
     }

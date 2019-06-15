@@ -44,8 +44,10 @@ enum OPERATOR {
     SUB_EQ,
     MUL,
     MUL_EQ,
-    DIV,
+    DIV,        //precise division
     DIV_EQ,
+    FLOOR_DIV,
+    FLOOR_DIV_EQ,
     MODULUS,
     MODULUS_EQ,
     MINUS,
@@ -55,7 +57,7 @@ enum OPERATOR {
     DEC_BACK,*/
     INC,
     DEC,
-    FRA_DIV,    //fraction division  "//"
+    
 
     LESS,
     LESS_EQ,
@@ -63,7 +65,6 @@ enum OPERATOR {
     GREATER_EQ,
     EQUAL,
     NOT_EQUAL,
-    FRA_DIV_EQ, //fraction division and assignment  "//="
 
     AND,
     OR,
@@ -304,7 +305,7 @@ struct OPERAND_OR_OPERATOR {
 
 enum ERROR_TYPE
 {
-    NO_ERROR,
+    THERE_IS_NO_ERROR,
     NO_OPERAND_BEFORE,
     UNEXPECTED_OPERAND,
 	UNEXPECTED_LEFT_BRACE,
