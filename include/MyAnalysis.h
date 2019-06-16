@@ -133,6 +133,11 @@ struct NODE {
     NODE* child[MAX_CHILD];
 	bool output;
 
+    NODE() {
+        memset(child, 0, sizeof(child));
+        sth = NULL;
+        sibling = NULL;
+    }
     NODE(NodeType _type) {
         Init(_type);
     }
@@ -143,9 +148,11 @@ struct NODE {
         if (!sth) return;
         switch (type) {
         case IS_CONSTANT:
-        case IS_VARIABLE:
-			((CONST_OR_VARIABLE*)sth)->del();
+            ((CONST_OR_VARIABLE*)sth)->del();
             delete (CONST_OR_VARIABLE*)sth;
+            break;
+        case IS_VARIABLE:
+			delete (string*)sth;
             break;
         case IS_OPERATOR:
             delete (OPERATOR*)sth;
@@ -169,6 +176,7 @@ struct NODE {
         case IS_NIL:
             break;  //skip
         }
+        sth = NULL;
     }
     void Init(NodeType _type) {
         type = _type;
@@ -329,6 +337,8 @@ bool CalcByTree(CONST_OR_VARIABLE& ans, const NODE* root, bool create_variable, 
 bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_map<string, VARIABLE>& variable_table, ostream& info);
 bool CalcByTree_IS_STRUCTURE(const NODE* root, unordered_map<string, VARIABLE>& variable_table, ostream& info);
 bool CalcByTree_IS_USER_FUNC_OR_ARRAY(const NODE* root, CONST_OR_VARIABLE& ans, bool create_variable, unordered_map<string, VARIABLE>& variable_table, ostream& info);
+
+void DelTree(NODE*& root);
 
 extern map<string, OPERATOR> operator_code;
 extern map<OPERATOR, int>priority;

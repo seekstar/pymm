@@ -1,0 +1,26 @@
+void DelTree(NODE*& root) {
+    if (NULL == root) return;
+    switch (root->type) {
+    case IS_CONSTANT:
+    case IS_VARIABLE:
+        root->del();
+        break;
+    case IS_OPERATOR:
+        DelTree_OPERATOR(root);
+        break;
+    case IS_STRUCTURE:
+        DelTree_STRUCTURE(root);
+        break;
+    case IS_USER_FUNC_OR_ARRAY:
+        DelTree_USER_FUNC_OR_ARRAY(root);
+        break;
+    }
+}
+
+void DelTree_OPERATOR(NODE*& root) {
+    if (NULL == root) return;
+    switch (root->op()) {
+        case ASSIGN:
+            FAIL_THEN_RETURN(DelTree)
+    }
+}

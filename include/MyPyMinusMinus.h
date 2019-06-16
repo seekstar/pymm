@@ -60,6 +60,7 @@ struct PYMM{
 #endif
 
         FAIL_THEN_RETURN(CalcByTree(root, variable_table, info));
+        DelTree(root);
 
         stored_input.clear();
         return SUCCEED;

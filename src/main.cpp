@@ -9,11 +9,12 @@ int main()
     PYMM pymm; 
     ostringstream info;
     string in;
-
+ 
     #if DEBUG
     //in = "a=4\n++a\n--a";
     //in = "a=6\n--a;\n--a";
-    in = "a=91\na--\na++";
+    //in = "a=91\na--\na++";
+    in = "a = 9";
     pymm.Input(in.c_str(), info);
     cout << "-------------\n" << info.str();
 

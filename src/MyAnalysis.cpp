@@ -1062,6 +1062,16 @@ bool CalcByTree_IS_USER_FUNC_OR_ARRAY(const NODE* root, CONST_OR_VARIABLE& ans, 
     return SUCCEED;
 }
 
+void DelTree(NODE*& root) {
+    if (NULL == root) return;
+    for (int i = 0; i < MAX_CHILD; ++i) {
+        DelTree(root->child[i]);
+    }
+    DelTree(root->sibling);
+    root->del();
+    root = NULL;
+}
+
 bool UpdateBraces(stack<char>& braces, const char*& str) {
     for (; *str; ++str) {
         switch (*str) {
