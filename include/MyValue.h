@@ -502,7 +502,7 @@ struct VALUE {
 		case IS_FRACTION:
 			switch (rhs.type) {
 			case IS_INTEGER:
-				ans.GetFractionThenClean(*(FRACTION*)val / *(FRACTION*)rhs.val);
+				ans.GetFractionThenClean(*(FRACTION*)val / *(IntType*)rhs.val);
 				break;
 			case IS_DOUBLE:
 				ans.type = IS_DOUBLE;

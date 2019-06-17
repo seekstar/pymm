@@ -263,8 +263,7 @@ struct UnsignedBigInt
     inline UnsignedBigInt operator * (const int& num) const
     {
         UnsignedBigInt ans = *this;
-        ans *= num;
-        return ans;
+        return ans *= num;
     }
     friend UnsignedBigInt operator * (int a, const UnsignedBigInt& b);
     UnsignedBigInt operator * (const UnsignedBigInt& b) const

@@ -9,7 +9,7 @@ int main()
     PYMM pymm;
     ostringstream info;
     string in;
- 
+
     #if DEBUG
     //in = "a=4\n++a\n--a";
     //in = "a=6\n--a;\n--a";
@@ -20,6 +20,7 @@ int main()
     //in = "cnt=0;prime(cnt++)=2\nprime";
     //in = "cnt = 0;cnt++";
     //in = "cnt = 0;++cnt";
+    in = "1/2/3";
     pymm.Input(in.c_str(), info);
     cout << "-------------\n" << info.str();
 
