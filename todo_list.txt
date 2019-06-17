@@ -1,0 +1,3 @@
+parsing:把函数或数组名单独放在一个节点，VARIABLE里添加一个IS_FUNCTION
+CalcByTree：返回函数或数组。
+

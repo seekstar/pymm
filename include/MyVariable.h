@@ -4,9 +4,6 @@
 #include <assert.h>
 
 #include "MyFlags.h"
-
-//#include "MyStringSTL.h"
-#include "MyArray.h"
 #include "MyValue.h"
 
 using namespace std;
@@ -14,388 +11,102 @@ using namespace std;
 enum VARIABLE_TYPE {
     IS_VALUE,
     IS_MATRIX,
-    IS_ARRAY    //广义表
+    IS_GLIST    //广义表
 };
 
-struct VARIABLE;
-
-typedef MyArray<VARIABLE> ARRAY;
-
-struct VARIABLE {
+class VARIABLE {
+public:
     VARIABLE_TYPE type;
     void* val;
 
-    VARIABLE() {
-        val = NULL;
-    }
-    //Construct the variable using v.val
-	VARIABLE(const VALUE& v) {
-		type = IS_VALUE;
-		val = new VALUE(v);
-	}
-    ~VARIABLE() {
-        ;
-    }
-	void del() {
-        if (!val) return;
-        switch (type) {
-        case IS_VALUE:
-            delete (VALUE*)val;
-            break;
-        case IS_MATRIX:
-            delete (MATRIX*)val;
-            break;
-		case IS_ARRAY:
-			delete (ARRAY*)val;
-			break;
-        }
-        val = NULL;
-    }
-    explicit operator bool() {
-		assert(IS_VALUE == type);
-        return (bool)*(VALUE*)val;
-    }
-    explicit operator size_t() {
-        assert(IS_VALUE == type);
-        return (size_t)*(VALUE*)val;
-    }
-    VARIABLE& Copy(const VARIABLE& rhs) {
-        del();
-        type = rhs.type;
-        switch (type) {
-        case IS_VALUE:
-            val = new VALUE;
-            ((VALUE*)val)->Copy(*(VALUE*)rhs.val);
-            break;
-        case IS_MATRIX:
-            //val = new MATRIX;
-            break;
-		case IS_ARRAY:
-			val = new ARRAY;
-			*(ARRAY*)val = *(ARRAY*)rhs.val;
-			break;
-        }
-        return *this;
-    }
-    void ToBool() {
-        assert(IS_VALUE == type);
-        ((VALUE*)val)->ChangeType(IS_BOOL);
-    }
-    VARIABLE operator + (const VARIABLE& rhs) const {
-		assert(type == IS_VALUE && rhs.type == IS_VALUE);
-        return VARIABLE(*(const VALUE*)val + *(const VALUE*)rhs.val);
-    }
-    VARIABLE operator - (const VARIABLE& rhs) const {
-		assert(type == IS_VALUE && rhs.type == IS_VALUE);
-        return VARIABLE(*(VALUE*)val - *(VALUE*)rhs.val);
-    }
-    VARIABLE operator * (const VARIABLE& rhs) const {
-		assert(type == IS_VALUE && rhs.type == IS_VALUE);
-        return VARIABLE(*(VALUE*)val * *(VALUE*)rhs.val);
-    }
-    VARIABLE operator / (const VARIABLE& rhs) const {
-		assert(type == IS_VALUE && rhs.type == IS_VALUE);
-        return VARIABLE(*(VALUE*)val / *(VALUE*)rhs.val);
-    }
-    VARIABLE operator % (const VARIABLE& rhs) const {
-		assert(type == IS_VALUE && rhs.type == IS_VALUE);
-        return VARIABLE(*(VALUE*)val % *(VALUE*)rhs.val);
-    }
-    VARIABLE operator - () {
-        assert(type == IS_VALUE);
-        return VARIABLE(-*(VALUE*)val);
-    }
-    VARIABLE fra_div(const VARIABLE& rhs) const {
-        assert(type == IS_VALUE && rhs.type == IS_VALUE);
-        return VARIABLE(((VALUE*)val)->fra_div(*(VALUE*)rhs.val));
-    }
+    VARIABLE();
+    VARIABLE(const VALUE& v);
+    ~VARIABLE();
 
-    VARIABLE& operator += (const VARIABLE& rhs) {
-		assert(type == IS_VALUE && rhs.type == IS_VALUE);
-		*(VALUE*)val += *(const VALUE*)rhs.val;
-		return *this;
-    }
-    VARIABLE& operator -= (const VARIABLE& rhs) {
-		assert(type == IS_VALUE && rhs.type == IS_VALUE);
-		*(VALUE*)val -= *(const VALUE*)rhs.val;
-		return *this;
-    }
-    VARIABLE& operator *= (const VARIABLE& rhs) {
-		assert(type == IS_VALUE && rhs.type == IS_VALUE);
-		*(VALUE*)val *= *(const VALUE*)rhs.val;
-		return *this;
-    }
-    VARIABLE& operator /= (const VARIABLE& rhs) {
-		assert(type == IS_VALUE && rhs.type == IS_VALUE);
-		*(VALUE*)val /= *(const VALUE*)rhs.val;
-		return *this;
-    }
-    VARIABLE& operator %= (const VARIABLE& rhs) {
-		assert(type == IS_VALUE && rhs.type == IS_VALUE);
-		*(VALUE*)val %= *(const VALUE*)rhs.val;
-		return *this;
-    }
-    VARIABLE& operator ++ () {
-        assert(type == IS_VALUE);
-        ++*(VALUE*)val;
-        return *this;
-    }
-    VARIABLE operator -- () {
-        assert(type == IS_VALUE);
-        --*(VALUE*)val;
-        return *this;
-    }
-    VARIABLE& fra_div_eq(const VARIABLE& rhs) {
-        assert(type == IS_VALUE && rhs.type == IS_VALUE);
-        ((VALUE*)val)->fra_div_eq(*(const VALUE*)rhs.val);
-        return *this;
-    }
+    explicit operator bool();
+    explicit operator size_t();
 
-    VARIABLE operator < (const VARIABLE& rhs) const {
-		assert(type == IS_VALUE && rhs.type == IS_VALUE);
-        return VARIABLE(*(VALUE*)val < *(VALUE*)rhs.val);
-    }
-    VARIABLE operator > (const VARIABLE& rhs) const {
-		assert(type == IS_VALUE && rhs.type == IS_VALUE);
-        return VARIABLE(*(VALUE*)val > *(VALUE*)rhs.val);
-    }
-    VARIABLE operator <= (const VARIABLE& rhs) const {
-		assert(type == IS_VALUE && rhs.type == IS_VALUE);
-        return VARIABLE(*(VALUE*)val <= *(VALUE*)rhs.val);
-    }
-    VARIABLE operator >= (const VARIABLE& rhs) const {
-		assert(type == IS_VALUE && rhs.type == IS_VALUE);
-        return VARIABLE(*(VALUE*)val >= *(VALUE*)rhs.val);
-    }
-    VARIABLE operator == (const VARIABLE& rhs) const {
-		assert(type == IS_VALUE && rhs.type == IS_VALUE);
-        return VARIABLE(*(VALUE*)val == *(VALUE*)rhs.val);
-    }
-    VARIABLE operator != (const VARIABLE& rhs) const {
-		assert(type == IS_VALUE && rhs.type == IS_VALUE);
-        return VARIABLE(*(VALUE*)val != *(VALUE*)rhs.val);
-    }
+	void del();
+    VARIABLE& Copy(const VARIABLE& rhs);
+	void ToBool();
 
-    void IfValueThenToArray() {
-        if (type == IS_VALUE) {
-            ARRAY* tmp = new ARRAY(1);
-            (*tmp)(0) = *this;
-            val = tmp;
-            type = IS_ARRAY;
-        }
-    }
-    VARIABLE& operator () (const vector<size_t>& pos) {
-        IfValueThenToArray();
-        return (*(ARRAY*)val)(pos);
-    }
-    bool OutOfBound(const vector<size_t>& pos) {
-        IfValueThenToArray();
-        return (*(ARRAY*)val).OutOfBound(pos);
-    }
-    void Print(ostream& out) const {
-        switch (type) {
-        case IS_VALUE:
-            out << *(const VALUE*)val;
-            break;
-        case IS_MATRIX:
-            out << *(const MATRIX*)val;
-            break;
-		case IS_ARRAY:
-			out << *(const ARRAY*)val;
-			break;
-        }
-    }
+	VARIABLE operator + (const VARIABLE& rhs) const;
+	VARIABLE operator - (const VARIABLE& rhs) const;
+	VARIABLE operator * (const VARIABLE& rhs) const;
+	VARIABLE operator / (const VARIABLE& rhs) const;
+	VARIABLE operator % (const VARIABLE& rhs) const;
+	VARIABLE operator - () const;
+	VARIABLE fra_div(const VARIABLE& rhs) const;
+
+	VARIABLE& operator += (const VARIABLE& rhs);
+	VARIABLE& operator -= (const VARIABLE& rhs);
+	VARIABLE& operator *= (const VARIABLE& rhs);
+	VARIABLE& operator /= (const VARIABLE& rhs);
+	VARIABLE& operator %= (const VARIABLE& rhs);
+	VARIABLE& operator ++ ();
+	VARIABLE& operator -- ();
+	VARIABLE& fra_div_eq(const VARIABLE& rhs);
+
+	VARIABLE operator < (const VARIABLE& rhs) const;
+	VARIABLE operator > (const VARIABLE& rhs) const;
+	VARIABLE operator <= (const VARIABLE& rhs) const;
+	VARIABLE operator >= (const VARIABLE& rhs) const;
+	VARIABLE operator == (const VARIABLE& rhs) const;
+	VARIABLE operator != (const VARIABLE& rhs) const;
+	
+	void IfValueOrEmptyThenToArray();
+	VARIABLE& operator () (const vector<size_t>& pos);
+	bool OutOfBound(const vector<size_t>& pos) const;
+
+	void Print(ostream& out) const;
 };
 
-struct CONST_OR_VARIABLE{
+class CONST_OR_VARIABLE{
+public:
     bool left_value;
     bool vari;
     VARIABLE* val;
 
-    CONST_OR_VARIABLE() {
-        val = NULL;
-    }
-    CONST_OR_VARIABLE(bool vari, bool lv) {
-        Init(vari, lv);
-    }
-    /*~CONST_OR_VARIABLE()
-    {
-        del();
-    }*/
+	CONST_OR_VARIABLE();
+	CONST_OR_VARIABLE(bool vari, bool lv);
 
-    explicit operator bool() {
-        return (bool)*val;
-    }
-    explicit operator size_t() {
-        return (size_t)*val;
-    }
-    void del() {
-        if (!left_value && val) {
-            val->del();
-        }
-        val = NULL;
-    }
-    void Init(bool _vari, bool lv) {
-        val = NULL;
-        vari = _vari;
-        left_value = lv;
-    }
-	void Init_new(bool _vari, bool lv) {
-		vari = _vari;
-		left_value = lv;
-		val = new VARIABLE;
-	}
-    void Copy(const CONST_OR_VARIABLE& rhs)
-    {
-        val->Copy(*rhs.val);
-    }
-    void NewRightVal(const CONST_OR_VARIABLE& rhs) {
-        Init_new(false, false);
-        Copy(rhs);
-    }
-    void ToBool() {
-        left_value = vari = false;
-        val->ToBool();
-    }
-    CONST_OR_VARIABLE operator + (const CONST_OR_VARIABLE& rhs) const {
-        static CONST_OR_VARIABLE ans;
-		ans.Init_new(false, false);
-        *ans.val = *val + *rhs.val;
-        return ans;
-    }
-    CONST_OR_VARIABLE operator - (const CONST_OR_VARIABLE& rhs) const {
-        static CONST_OR_VARIABLE ans;
-		ans.Init_new(false, false);
-        *ans.val = *val - *rhs.val;
-        return ans;
-    }
-    CONST_OR_VARIABLE operator * (const CONST_OR_VARIABLE& rhs) const {
-        static CONST_OR_VARIABLE ans;
-		ans.Init_new(false, false);
-        *ans.val = *val * *rhs.val;
-        return ans;
-    }
-    CONST_OR_VARIABLE operator / (const CONST_OR_VARIABLE& rhs) const {
-        static CONST_OR_VARIABLE ans;
-		ans.Init_new(false, false);
-        *ans.val = *val / *rhs.val;
-        return ans;
-    }
-	CONST_OR_VARIABLE operator % (const CONST_OR_VARIABLE& rhs) const {
-		static CONST_OR_VARIABLE ans;
-		ans.Init_new(false, false);
-		*ans.val = *val % *rhs.val;
-		return ans;
-	}
-    CONST_OR_VARIABLE operator - () const {
-        static CONST_OR_VARIABLE ans;
-        ans.Init_new(false, false);
-        *ans.val = -*val;
-        return ans;
-    }
-    CONST_OR_VARIABLE operator ++ (int) {
-        assert(left_value && vari);
-        static CONST_OR_VARIABLE ans;
-        ans.NewRightVal(*this);
-        ++*this;
-        return ans;
-    }
-    CONST_OR_VARIABLE operator -- (int) {
-        assert(left_value && vari);
-        static CONST_OR_VARIABLE ans;
-        ans.NewRightVal(*this);
-        --*this;
-        return ans;
-    }
-    CONST_OR_VARIABLE fra_div(const CONST_OR_VARIABLE& rhs) const {
-        static CONST_OR_VARIABLE ans;
-        ans.Init_new(false, false);
-        *ans.val = val->fra_div(*rhs.val);
-        return ans;
-    }
+	operator bool();
+	operator size_t();
 
-    CONST_OR_VARIABLE& operator += (const CONST_OR_VARIABLE& rhs) {
-        assert(left_value && vari);
-        *val += *rhs.val;
-        return *this;
-    }
-    CONST_OR_VARIABLE& operator -= (const CONST_OR_VARIABLE& rhs) {
-        assert(left_value && vari);
-        *val -= *rhs.val;
-        return *this;
-    }
-    CONST_OR_VARIABLE& operator *= (const CONST_OR_VARIABLE& rhs) {
-        assert(left_value && vari);
-        *val *= *rhs.val;
-        return *this;
-    }
-    CONST_OR_VARIABLE& operator /= (const CONST_OR_VARIABLE& rhs) {
-        assert(left_value && vari);
-        *val /= *rhs.val;
-        return *this;
-    }
-    CONST_OR_VARIABLE& operator %= (const CONST_OR_VARIABLE& rhs) {
-        assert(left_value && vari);
-        *val %= *rhs.val;
-        return *this;
-    }
-    CONST_OR_VARIABLE& operator ++ () {
-        assert(left_value && vari);
-        ++*val;
-        return *this;
-    }
-    CONST_OR_VARIABLE& operator -- () {
-        assert(left_value && vari);
-        --*val;
-        return *this;
-    }
-    CONST_OR_VARIABLE& fra_div_eq(const CONST_OR_VARIABLE& rhs) {
-        assert(left_value && vari);
-        val->fra_div_eq(*rhs.val);
-        return *this;
-    }
+	void del();
+	void Init(bool _vari, bool lv);
+	void Init_new(bool _vari, bool lv);
+	void Copy(const CONST_OR_VARIABLE& rhs);
+	void NewRightVal(const CONST_OR_VARIABLE& rhs);
+	void ToBool();
 
-	CONST_OR_VARIABLE operator < (const CONST_OR_VARIABLE& rhs) const {
-		static CONST_OR_VARIABLE ans;
-		ans.Init_new(false, false);
-		*ans.val = *val < *rhs.val;
-		return ans;
-	}
-	CONST_OR_VARIABLE operator <= (const CONST_OR_VARIABLE& rhs) const {
-		static CONST_OR_VARIABLE ans;
-		ans.Init_new(false, false);
-		*ans.val = *val <= *rhs.val;
-		return ans;
-	}
-	CONST_OR_VARIABLE operator > (const CONST_OR_VARIABLE& rhs) const {
-		static CONST_OR_VARIABLE ans;
-		ans.Init_new(false, false);
-		*ans.val = *val > *rhs.val;
-		return ans;
-	}
-	CONST_OR_VARIABLE operator >= (const CONST_OR_VARIABLE& rhs) const {
-		static CONST_OR_VARIABLE ans;
-		ans.Init_new(false, false);
-		*ans.val = *val >= *rhs.val;
-		return ans;
-	}
-    CONST_OR_VARIABLE operator == (const CONST_OR_VARIABLE& rhs) const {
-		static CONST_OR_VARIABLE ans;
-		ans.Init_new(false, false);
-		*ans.val = *val == *rhs.val;
-		return ans;
-    }
-    CONST_OR_VARIABLE operator != (const CONST_OR_VARIABLE& rhs) const {
-		static CONST_OR_VARIABLE ans;
-		ans.Init_new(false, false);
-		*ans.val = *val == *rhs.val;
-		return ans;
-    }
+	CONST_OR_VARIABLE operator + (const CONST_OR_VARIABLE& rhs) const;
+	CONST_OR_VARIABLE operator - (const CONST_OR_VARIABLE& rhs) const;
+	CONST_OR_VARIABLE operator * (const CONST_OR_VARIABLE& rhs) const;
+	CONST_OR_VARIABLE operator / (const CONST_OR_VARIABLE& rhs) const;
+	CONST_OR_VARIABLE operator % (const CONST_OR_VARIABLE& rhs) const;
+	CONST_OR_VARIABLE operator - () const;
+	CONST_OR_VARIABLE operator ++ (int);
+	CONST_OR_VARIABLE operator -- (int);
+	CONST_OR_VARIABLE fra_div(const CONST_OR_VARIABLE& rhs) const;
 
-    void Print(ostream& out)
-    {
-        val->Print(out);
-    }
+	CONST_OR_VARIABLE& operator += (const CONST_OR_VARIABLE& rhs);
+	CONST_OR_VARIABLE& operator -= (const CONST_OR_VARIABLE& rhs);
+	CONST_OR_VARIABLE& operator *= (const CONST_OR_VARIABLE& rhs);
+	CONST_OR_VARIABLE& operator /= (const CONST_OR_VARIABLE& rhs);
+	CONST_OR_VARIABLE& operator %= (const CONST_OR_VARIABLE& rhs);
+	CONST_OR_VARIABLE& operator ++ ();
+	CONST_OR_VARIABLE& operator -- ();
+	CONST_OR_VARIABLE& fra_div_eq(const CONST_OR_VARIABLE& rhs);
+
+	CONST_OR_VARIABLE operator < (const CONST_OR_VARIABLE& rhs) const;
+	CONST_OR_VARIABLE operator <= (const CONST_OR_VARIABLE& rhs) const;
+	CONST_OR_VARIABLE operator > (const CONST_OR_VARIABLE& rhs) const;
+	CONST_OR_VARIABLE operator >= (const CONST_OR_VARIABLE& rhs) const;
+	CONST_OR_VARIABLE operator == (const CONST_OR_VARIABLE& rhs) const;
+	CONST_OR_VARIABLE operator != (const CONST_OR_VARIABLE& rhs) const;
+
+	void Print(ostream& out) const;
 };
 
 bool IsBeginningOfConst(char ch);

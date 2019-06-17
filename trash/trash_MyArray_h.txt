@@ -7,14 +7,20 @@
 
 #include "MyTrivialFunc.h"
 
+#if DEBUG
+#include <iostream>
+#endif
+
 using namespace std;
 
 size_t Position(const vector<size_t>& len, const vector<size_t>& pos);
 size_t CalcSize(const vector<size_t>& len);
+void ExpandSizeTo(size_t& sz, size_t to);
 
 template<typename value_type>
 struct MyArray {
 	vector<size_t> len;	//the length of corresponding dimensions. len[0] is the length of the lowest dimension
+	vector<size_t> cap;
 	vector<value_type> base;
 
 	MyArray() {}
@@ -28,13 +34,23 @@ struct MyArray {
 		resize(_len);
 	}
 
+	void ExpandCap() {
+		for (size_t& sz : cap) {
+			ExpandSizeTo(sz, len[])
+		}
+	}
 	void resize(size_t n) {
 		len.resize(1);
+		cap.resize(1);
+		cap[0] = 2;
 		len[0] = n;
+		ExpandCap();
 		ResizeBase();
 	}
 	void resize(size_t n, size_t m) {
 		len.resize(2);
+		cap.resize(2);
+		cap[0] = cap[1] = 2;
 		len[0] = m;
 		len[1] = n;
 		ResizeBase();
@@ -90,7 +106,30 @@ struct MyArray {
 		}
 	}
 	size_t position(const vector<size_t>& pos) {
+#if DEBUG
+		cerr << "pos:\t";
+		for (auto i : pos) 
+			cerr << i << ' ';
+		cerr << endl << "Before Handle:\nlen:\t";
+		for (auto i : len) {
+			cerr << i << ' ';
+		}
+		cerr << endl << "base:\t";
+		for (auto i : base)
+			cerr << i << ' ';
+		cerr << endl;
+#endif
 		HandleOutOfBounds(pos);
+#if DEBUG
+		cerr << "After Handle:\nlen:\t";
+		for (auto i : len) {
+			cerr << i << ' ';
+		}
+		cerr << endl << "base:\t";
+		for (auto i : base)
+			cerr << i << ' ';
+		cerr << endl;
+#endif
 		return Position(len, pos);
 	}
 	//Do not handle out of bound
@@ -153,6 +192,7 @@ void CopyArray(MyArray<value_type>& arr, const vector<value_type>& from, const v
 	}
 }*/
 
+//Only copy [0,n) dimensions, the position of higher dimensions are given by now.
 template<typename value_type>
 void CopyArray(vector<value_type>& to, const vector<size_t>& to_len, const vector<value_type>& from, const vector<size_t>& from_len, vector<size_t>& now, int n) {
 	if (0 == n) {

@@ -13,6 +13,7 @@ struct PYMM{
     unordered_map<string, VARIABLE> variable_table;
     stack<char> braces;
     string stored_input;
+    unordered_map<string, NODE*> func_table;
 
     //unordered_map<string, int> varNum;  //of user function or array
 

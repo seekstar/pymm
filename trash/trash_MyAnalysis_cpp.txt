@@ -24,3 +24,26 @@ void DelTree_OPERATOR(NODE*& root) {
             FAIL_THEN_RETURN(DelTree)
     }
 }
+
+
+
+bool Parsing_IS_USER_FUNC_OR_ARRAY(NODE*& operand, vector<StrExpr>::iterator& now, ostream& info) {
+    operand = new NODE(IS_USER_FUNC_OR_ARRAY);
+    operand->user_func_or_array() = now->name;
+
+    bool finish = false;    //Just to deal with compile error
+    ++now;
+    if (now->name != ")") {
+        ++now;
+        FAIL_THEN_RETURN(Parsing_dfs(operand->child[0], now, finish, info));
+        --now;
+    }
+    NODE* var = operand->child[0];
+    while (now->name != ")") {
+        ++now;
+        FAIL_THEN_RETURN(Parsing_dfs(var->sibling, now, finish, info));
+        //++varNum[operand->user_func_or_array()];
+        --now;
+    }
+    return SUCCEED;
+}

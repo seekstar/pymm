@@ -162,6 +162,11 @@ void Init(void){
     numOfOperands[BIT_OR] = 2;
     associative[BIT_OR] = LEFT_ASSOCIATIVE;
 
+    operator_code["()"] = BRACKET;
+    priority[BRACKET] = 1;
+    numOfOperands[BRACKET] = 2;
+    associative[BRACKET] = LEFT_ASSOCIATIVE;
+
     symbols.insert('=');
     symbols.insert('+');
     symbols.insert('-');
@@ -318,9 +323,12 @@ const char* OperatorName(OPERATOR op)
         return "(";
     case RIGHT_PARENTHESIS:
         return ")";
-    default:
-        return "ERROR";
+    
+    case BRACKET:
+        return "()";
     }
+    assert(1);
+    return "ERROR";
 }
 
 const char* KeyWordName(KEY_WORD key_word)
@@ -598,8 +606,18 @@ bool Parsing_IS_OPERATOR(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>
     case 0:
         switch (op) {
         case LEFT_PARENTHESIS:
-            FAIL_THEN_RETURN(Parsing_dfs(operand, ++now, finish, info));
-            --now;  //because the for loop will increase it soon.
+            if (operand) {
+                tmp = new NODE(IS_OPERATOR);
+                tmp->op() = BRACKET;
+                tmp->child[0] = operand;
+                operand = tmp;
+                tmp = NULL;
+                ++now;
+                GetParameters(operand, now, info);
+            } else {
+                FAIL_THEN_RETURN(Parsing_dfs(operand, ++now, finish, info));
+                --now;  //because the for loop will increase it soon.
+            }
             break;
         case RIGHT_PARENTHESIS:
             PopAllOperators(operator_sta, operand);
@@ -757,26 +775,38 @@ void Parsing_IS_SEPARATOR(ERROR_TYPE& error_type, const string& name, bool& need
 	}
 }
 
+//After the function return, "now" points to ')'
 bool Parsing_IS_USER_FUNC_OR_ARRAY(NODE*& operand, vector<StrExpr>::iterator& now, ostream& info) {
+    if (operand) {
+        info << "Unexpected user defined function or array \"" << now->name << "\"\n";
+        return FAIL; 
+    }
     operand = new NODE(IS_USER_FUNC_OR_ARRAY);
     operand->user_func_or_array() = now->name;
-
-    bool finish = false;    //Just to deal with compile error
     ++now;
+    ++now;
+    GetParameters(operand, now, info);
+
+    return SUCCEED;
+}
+
+//"now" point to the next place of '('
+//After the function return, "now" points to ')'
+bool GetParameters(NODE*& operand, vector<StrExpr>::iterator& now, ostream& info) {
+    bool finish = false;
+    //Get the first parameter
     if (now->name != ")") {
-        ++now;
-        FAIL_THEN_RETURN(Parsing_dfs(operand->child[0], now, finish, info));
+        FAIL_THEN_RETURN(Parsing_dfs(operand->child[1], now, finish, info));
         --now;
     }
-    NODE* var = operand->child[0];
-    while (now->name != ")") {
+    for (NODE* var = operand->child[1]; now->name != ")"; var = var->sibling) {
         ++now;
         FAIL_THEN_RETURN(Parsing_dfs(var->sibling, now, finish, info));
-        //++varNum[operand->user_func_or_array()];
         --now;
     }
     return SUCCEED;
 }
+
 
 bool CalcByTree(const NODE* root, unordered_map<string, VARIABLE>& variable_table, ostream& info) {
     while (root) {
@@ -790,9 +820,22 @@ bool CalcByTree(const NODE* root, unordered_map<string, VARIABLE>& variable_tabl
     }
     return SUCCEED;
 }
+bool GetVariable(VARIABLE*& ans, const string& name, bool create_variable, unordered_map<string, VARIABLE>& variable_table, ostream& info) {
+    auto it = variable_table.find(name);
+    if (it == variable_table.end()) {
+        if (create_variable) {
+            ans = &variable_table[name];
+        } else {
+            info << "No such a variable " << name << '\n';
+            return FAIL;
+        }
+    } else {
+        ans = &it->second;
+    }
+    return SUCCEED;
+}
 bool CalcByTree(CONST_OR_VARIABLE& ans, const NODE* root, bool create_variable, unordered_map<string, VARIABLE>& variable_table, ostream& info) {
     bool result = SUCCEED;
-	unordered_map<string, VARIABLE>::iterator it;
 
     switch (root->type) {
     case IS_CONSTANT:
@@ -800,23 +843,13 @@ bool CalcByTree(CONST_OR_VARIABLE& ans, const NODE* root, bool create_variable, 
 		break;
     case IS_VARIABLE:
 		ans.Init(true, true);
-		it = variable_table.find(root->variable());
-		if (it == variable_table.end()) {
-			if (create_variable) {
-				ans.val = &variable_table[root->variable()];
-			} else {
-				info << "No such a variable " << root->variable() << '\n';
-				result = FAIL;
-			}
-		} else {
-			ans.val = &it->second;
-		}
+		FAIL_THEN_RETURN(GetVariable(ans.val, root->variable(), create_variable, variable_table, info));
         break;
     case IS_OPERATOR:
-		CalcByTree_IS_OPERATOR(root, ans, variable_table, info);
+		FAIL_THEN_RETURN(CalcByTree_IS_OPERATOR(root, ans, create_variable, variable_table, info));
         break;
     case IS_STRUCTURE:
-        CalcByTree_IS_STRUCTURE(root, variable_table, info);
+        FAIL_THEN_RETURN(CalcByTree_IS_STRUCTURE(root, variable_table, info));
         break;
     case IS_USER_FUNC_OR_ARRAY:
         FAIL_THEN_RETURN(CalcByTree_IS_USER_FUNC_OR_ARRAY(root, ans, create_variable, variable_table, info));
@@ -828,7 +861,7 @@ bool CalcByTree(CONST_OR_VARIABLE& ans, const NODE* root, bool create_variable, 
     return result;
 }
 
-bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_map<string, VARIABLE>& variable_table, ostream& info) {
+bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, bool create_variable, unordered_map<string, VARIABLE>& variable_table, ostream& info) {
     CONST_OR_VARIABLE ans1;
     CONST_OR_VARIABLE ans2;
     bool status = SUCCEED;
@@ -977,6 +1010,10 @@ bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_
 		}
         ans.ToBool();
         break;
+    
+    case BRACKET:
+        CalcByTree_BRACKET(ans, root, create_variable, variable_table, info);
+        break;
     default:
         ErrMsg(info, "No such an operator ", root->op());
         break;
@@ -986,6 +1023,26 @@ EXIT:
     ans1.del();
     ans2.del();
 	return status;
+}
+void CalcPos(const NODE* var, vector<size_t>& pos, unordered_map<string, VARIABLE>& variable_table, ostream& info) {
+    vector<CONST_OR_VARIABLE> par;
+    CalcParameter(var, par, variable_table, info);
+    for (auto i : par) {
+        pos.push_back((size_t)i);
+        i.del();
+    }
+}
+bool CalcByTree_BRACKET(CONST_OR_VARIABLE& ans, const NODE* root, bool create_variable, unordered_map<string, VARIABLE>& variable_table, ostream& info) {
+    vector<size_t> pos;
+    CalcPos(root->child[1], pos, variable_table, info);
+
+    CONST_OR_VARIABLE ans1;
+    FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], create_variable, variable_table, info));
+
+    CalcArray(ans, *ans1.val, pos, create_variable, info);
+
+    ans1.del();
+    return SUCCEED;
 }
 bool CalcByTree_IS_STRUCTURE(const NODE* root, unordered_map<string, VARIABLE>& variable_table, ostream& info) {
     CONST_OR_VARIABLE condition;
@@ -1037,29 +1094,54 @@ bool CalcByTree_IS_STRUCTURE(const NODE* root, unordered_map<string, VARIABLE>& 
 
     return SUCCEED;
 }
-bool CalcByTree_IS_USER_FUNC_OR_ARRAY(const NODE* root, CONST_OR_VARIABLE& ans, bool create_variable, unordered_map<string, VARIABLE>& variable_table, ostream& info) {
-    auto it = variable_table.find(root->user_func_or_array());
-    if (it == variable_table.end()) {   //Is user_func
-        info << "No such a user defined function " << root->user_func_or_array() << endl;
+//var is the head of nodes of parameters
+void CalcParameter(const NODE* var, vector<CONST_OR_VARIABLE>& par, unordered_map<string, VARIABLE>& variable_table, ostream& info) {
+    CONST_OR_VARIABLE tmp;
+    while (var) {
+        CalcByTree(tmp, var, false, variable_table, info);
+        par.push_back(tmp);
+        var = var->sibling;
+    }
+}
+bool CalcArray(CONST_OR_VARIABLE& ans, VARIABLE& arr, const vector<size_t>& pos, bool create_variable, ostream& info) {
+    if (arr.val == NULL || arr.type != IS_GLIST) {
+        arr.IfValueOrEmptyThenToArray();
+    }
+
+    ans = CONST_OR_VARIABLE(true, true);
+    if (!create_variable && arr.OutOfBound(pos)) {
+        info << "Out of bound!" << endl;
         return FAIL;
-    } else {        //Is array
-        vector<size_t> pos;
-        NODE* var = root->child[0];
-        while (var) {
-            CalcByTree(ans, var, false, variable_table, info);
-            pos.push_back((size_t)ans);
-            ans.del();
-            var = var->sibling;
-        }
-        ans = CONST_OR_VARIABLE(true, true);
-        if (!create_variable && (it->second).OutOfBound(pos)) {
-            info << "Out of bound for array " << root->user_func_or_array() << endl;
-            return FAIL;
-        } else {
-            ans.val = &(it->second)(pos);
-        }
+    } else {
+        ans.val = &arr(pos);
     }
     return SUCCEED;
+}
+bool CalcByTree_IS_USER_FUNC_OR_ARRAY(const NODE* root, CONST_OR_VARIABLE& ans, bool create_variable, unordered_map<string, VARIABLE>& variable_table, ostream& info) {
+    unordered_map<string, NODE*> func_table;    //temp
+    
+    vector<CONST_OR_VARIABLE> par;
+    CalcParameter(root->child[1], par, variable_table, info);
+
+    auto it = func_table.find(root->user_func_or_array());
+    if (it == func_table.end()) {
+        VARIABLE* arr = NULL;
+        FAIL_THEN_RETURN(GetVariable(arr, root->user_func_or_array(), create_variable, variable_table, info));
+
+        vector<size_t> pos;
+        for (auto i : par) {
+            pos.push_back(size_t(i));
+        }
+        CalcArray(ans, *arr, pos, create_variable, info);
+        
+        for (auto i : par) {
+            i.del();
+        }
+        return SUCCEED;
+    } else {        //Is user defined function
+        assert(1);
+        return FAIL;
+    }
 }
 
 void DelTree(NODE*& root) {

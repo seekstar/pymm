@@ -54,28 +54,41 @@ int NumOfBranches(const NODE* root) {
 		return structureBranches[root->structure()];
 	case IS_USER_FUNC_OR_ARRAY:
 		//return varNum[root->user_func_or_array()];
-		return 1;
+		return 2;
 	default:
 		assert(1);
 		return -1;
 	}
 }
-bool LastChildHasSibling(const NODE* root) {
-	return root ? (root->child[NumOfBranches(root)-1]->sibling != NULL) : false;
+bool LastChildHasSibling(const NODE* root, int i) {
+	return root ? (root->child[i-1]->sibling != NULL) : false;
+}
+void PrintABranchWithNext(ostream& res, NODE* root, MyQueue<MyString>& lines, vector<size_t>& rec_branch) {
+	PrintTree(res, root, lines, rec_branch);
+	FillNewLine(lines, 0, rec_branch);
+	lines.front() += "--";
 }
 void PrintBranches(ostream& res, NODE* root, MyQueue<MyString>& lines, vector<size_t>& rec_branch) {
 	assert(root);
-	int num_branch = NumOfBranches(root);
+
 	PrintABranch(lines, rec_branch);
-	for (int i = 0; i < num_branch - 1; ++i) {
-		PrintTree(res, root->child[i], lines, rec_branch);
-		FillNewLine(lines, 0, rec_branch);
-		lines.front() += "--";
+
+	bool lastHasSibling;
+	int num_branch = NumOfBranches(root);
+	int i;
+	if (num_branch == 1) {
+		for (i = 0; !root->child[i]; ++i) {
+			PrintABranchWithNext(res, root->child[i], lines, rec_branch);
+		}
+	} else {
+		for (i = 0; i < num_branch - 1; ++i) {
+			PrintABranchWithNext(res, root->child[i], lines, rec_branch);
+		}
 	}
-	bool lastHasSibling = LastChildHasSibling(root);
+	lastHasSibling = LastChildHasSibling(root, i+1);
 	if (!lastHasSibling)
 		rec_branch.pop_back();
-	PrintTree(res, root->child[num_branch-1], lines, rec_branch);
+	PrintTree(res, root->child[i], lines, rec_branch);
 	if (lastHasSibling)
 		rec_branch.pop_back();
 	//FillNewLine(lines, 0, rec_branch);
@@ -85,6 +98,11 @@ void PrintBranches(ostream& res, NODE* root, MyQueue<MyString>& lines, vector<si
 }*/
 //Do not print the last '\n'
 void PrintTree(ostream& res, NODE* root, MyQueue<MyString>& lines, vector<size_t>& rec_branch) {
+	if (!root) {
+		lines[0].append("/\\");
+		res << lines.front() << endl;
+		lines.pop();
+	}
 	while (root) {
 		FillNewLine(lines, 0, rec_branch);
 		ostringstream out;

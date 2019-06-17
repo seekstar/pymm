@@ -78,6 +78,8 @@ enum OPERATOR {
     RIGHT_PARENTHESIS,
     //LEFT_BRACE,
     //RIGHT_BRACE
+
+    BRACKET
 };
 
 const char* OperatorName(OPERATOR op);
@@ -96,7 +98,7 @@ enum STRUCTURE {
     IF,
     WHILE,
     FOR,
-    DO_WHILE
+    DO_WHILE,
 };
 
 const char* StructureName(STRUCTURE structure);
@@ -331,11 +333,16 @@ bool Parsing_IS_OPERATOR(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>
 bool Parsing_IS_KEY_WORD(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>::iterator& now, ostream& info);
 void Parsing_IS_SEPARATOR(ERROR_TYPE& error_type, const string& name, bool& needReturn, bool& finish, bool& need_output);
 bool Parsing_IS_USER_FUNC_OR_ARRAY(NODE*& operand, vector<StrExpr>::iterator& now, ostream& info);
+bool GetParameters(NODE*& operand, vector<StrExpr>::iterator& now, ostream& info);
 
 bool CalcByTree(const NODE* root, unordered_map<string, VARIABLE>& variable_table, ostream& info);
 bool CalcByTree(CONST_OR_VARIABLE& ans, const NODE* root, bool create_variable, unordered_map<string, VARIABLE>& variable_table, ostream& info);
-bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, unordered_map<string, VARIABLE>& variable_table, ostream& info);
+bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, bool create_variable, unordered_map<string, VARIABLE>& variable_table, ostream& info);
+void CalcPos(const NODE* var, vector<size_t>& pos, unordered_map<string, VARIABLE>& variable_table, ostream& info);
+bool CalcByTree_BRACKET(CONST_OR_VARIABLE& ans, const NODE* root, bool create_variable, unordered_map<string, VARIABLE>& variable_table, ostream& info);
 bool CalcByTree_IS_STRUCTURE(const NODE* root, unordered_map<string, VARIABLE>& variable_table, ostream& info);
+void CalcParameter(const NODE* var, vector<CONST_OR_VARIABLE>& par, unordered_map<string, VARIABLE>& variable_table, ostream& info);
+bool CalcArray(CONST_OR_VARIABLE& ans, VARIABLE& arr, const vector<size_t>& pos, bool create_variable, ostream& info);
 bool CalcByTree_IS_USER_FUNC_OR_ARRAY(const NODE* root, CONST_OR_VARIABLE& ans, bool create_variable, unordered_map<string, VARIABLE>& variable_table, ostream& info);
 
 void DelTree(NODE*& root);

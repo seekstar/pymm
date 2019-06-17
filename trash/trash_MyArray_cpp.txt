@@ -16,3 +16,9 @@ size_t CalcSize(const vector<size_t>& len) {
 		ans *= i;
 	return ans;
 }
+
+void ExpandSizeTo(size_t& sz, size_t to) {
+	while (sz <= to) {
+		sz += sz << 1;
+	}
+}
