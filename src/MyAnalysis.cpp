@@ -256,8 +256,8 @@ const char* NodeTypeName(NodeType type) {
 const char* OperatorName(OPERATOR op)
 {
     switch (op) {
-    case NIL:
-        return "/\\";
+    /*case NIL:
+        return "/\\";*/
     case ASSIGN:
         return "(=)";
 
@@ -589,7 +589,7 @@ void Parsing_IS_CONSTANT(NODE*& operand, ERROR_TYPE& error_type, const vector<St
 }
 
 bool Parsing_IS_OPERATOR(NODE*& operand, ERROR_TYPE& error_type, vector<StrExpr>::iterator& now, stack<NODE*>& operator_sta, bool& needReturn, ostream& info) {
-    OPERATOR op = NIL;
+    OPERATOR op;
     NODE* tmp = NULL;
 	if (now->name == "-") {
         if (operand) {     //There are operands before
@@ -994,6 +994,10 @@ bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, bool creat
         ans = ans1 != ans2;
         break;
 
+    case NOT:
+        FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
+        ans.ToBool();
+        break;
     case AND:
         FAIL_THEN_RETURN(CalcByTree(ans, root->child[0], false, variable_table, info));
 		if ((bool)ans) {
@@ -1014,8 +1018,13 @@ bool CalcByTree_IS_OPERATOR(const NODE* root, CONST_OR_VARIABLE& ans, bool creat
     case BRACKET:
         CalcByTree_BRACKET(ans, root, create_variable, variable_table, info);
         break;
-    default:
-        ErrMsg(info, "No such an operator ", root->op());
+
+    case BIT_AND:
+    case BIT_OR:
+    case BIT_NOT:
+    case LEFT_PARENTHESIS:
+    case RIGHT_PARENTHESIS:
+        ErrMsg(info, "Unexpected operator ", root->op());
         break;
     }
 

@@ -27,6 +27,7 @@ public:
     explicit operator size_t();
 
 	void del();
+	VARIABLE& CopyWithoutDel(VARIABLE rhs);
     VARIABLE& Copy(const VARIABLE& rhs);
 	void ToBool();
 

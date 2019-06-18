@@ -35,7 +35,6 @@ enum NodeType {
 string NodeType2string(NodeType type);
 
 enum OPERATOR {
-    NIL,
     ASSIGN,
 
     ADD,

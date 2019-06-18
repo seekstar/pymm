@@ -1,6 +1,10 @@
 #ifndef MYARITHMETIC_H_INCLUDED
 #define MYARITHMETIC_H_INCLUDED
 
+#include <cstddef>
+
+using namespace std;
+
 template <typename T>
 void AddMod(T &x, T mod) {
     if (x >= mod)

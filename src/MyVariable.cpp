@@ -37,8 +37,14 @@ VARIABLE::operator size_t() {
     assert(IS_VALUE == type);
     return (size_t)*(VALUE*)val;
 }
-VARIABLE& VARIABLE::Copy(const VARIABLE& rhs) {
-    del();
+/*VARIABLE& VARIABLE::CloneItSelf() {
+    switch (type) {
+        val = new VALUE;
+        ((VALUE*)val)->Copy(*(VALUE*)val);
+    }
+}*/
+//rhs may be the same as *this, so rhs mustn't be reference
+VARIABLE& VARIABLE::CopyWithoutDel(VARIABLE rhs) {
     type = rhs.type;
     switch (type) {
     case IS_VALUE:
@@ -54,6 +60,10 @@ VARIABLE& VARIABLE::Copy(const VARIABLE& rhs) {
         break;
     }
     return *this;
+}
+VARIABLE& VARIABLE::Copy(const VARIABLE& rhs) {
+    del();
+    return CopyWithoutDel(rhs);
 }
 void VARIABLE::ToBool() {
     assert(IS_VALUE == type);
@@ -231,6 +241,9 @@ void CONST_OR_VARIABLE::NewRightVal(const CONST_OR_VARIABLE& rhs) {
 	Copy(rhs);
 }
 void CONST_OR_VARIABLE::ToBool() {
+    if (left_value) {
+        val->CopyWithoutDel(*val);
+    }
 	left_value = vari = false;
 	val->ToBool();
 }

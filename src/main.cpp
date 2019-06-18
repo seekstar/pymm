@@ -20,7 +20,8 @@ int main()
     //in = "cnt=0;prime(cnt++)=2\nprime";
     //in = "cnt = 0;cnt++";
     //in = "cnt = 0;++cnt";
-    in = "1/2/3";
+    //in = "1/2/3";
+    in = "a = 1; if (1 && a) {1} else {0} a";
     pymm.Input(in.c_str(), info);
     cout << "-------------\n" << info.str();
 
