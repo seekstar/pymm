@@ -61,6 +61,13 @@ VARIABLE& VARIABLE::CopyWithoutDel(VARIABLE rhs) {
     }
     return *this;
 }
+/*VARIABLE VARIABLE::Copy() {
+    VARIABLE ans;
+    ans.type = type;
+    switch (type) {
+        
+    }
+}*/
 VARIABLE& VARIABLE::Copy(const VARIABLE& rhs) {
     del();
     return CopyWithoutDel(rhs);
@@ -242,7 +249,9 @@ void CONST_OR_VARIABLE::NewRightVal(const CONST_OR_VARIABLE& rhs) {
 }
 void CONST_OR_VARIABLE::ToBool() {
     if (left_value) {
+        val = new VARIABLE(*val);
         val->CopyWithoutDel(*val);
+        //val = val->Clone();
     }
 	left_value = vari = false;
 	val->ToBool();
