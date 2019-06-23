@@ -1,11 +1,11 @@
 #include <iostream>
 
 #include "MyPyMinusMinus.h" 
- 
+
 using namespace std; 
 
 int main()
-{ 
+{
     PYMM pymm;
     ostringstream info;
     string in;
@@ -21,7 +21,8 @@ int main()
     //in = "cnt = 0;cnt++";
     //in = "cnt = 0;++cnt";
     //in = "1/2/3";
-    in = "a = 1; if (1 && a) {1} else {0} a";
+    //in = "a = 1; if (1 && a) {1} else {0} a";
+    in = "if(1){1\nbreak = 0}";
     pymm.Input(in.c_str(), info);
     cout << "-------------\n" << info.str();
 
