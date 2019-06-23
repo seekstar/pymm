@@ -808,6 +808,7 @@ bool GetParameters(NODE*& operand, vector<StrExpr>::iterator& now, ostream& info
 }
 
 
+//Calculate the entire tree.
 bool CalcByTree(const NODE* root, unordered_map<string, VARIABLE>& variable_table, ostream& info) {
     while (root) {
         CONST_OR_VARIABLE ans;
@@ -820,6 +821,7 @@ bool CalcByTree(const NODE* root, unordered_map<string, VARIABLE>& variable_tabl
     }
     return SUCCEED;
 }
+//Find or create a variable with the name of variable.
 bool GetVariable(VARIABLE*& ans, const string& name, bool create_variable, unordered_map<string, VARIABLE>& variable_table, ostream& info) {
     auto it = variable_table.find(name);
     if (it == variable_table.end()) {
@@ -834,6 +836,8 @@ bool GetVariable(VARIABLE*& ans, const string& name, bool create_variable, unord
     }
     return SUCCEED;
 }
+//Calculate an expression(do not calculate the sibling.)
+//If the root is in an assignment statment, then create_variable == true.
 bool CalcByTree(CONST_OR_VARIABLE& ans, const NODE* root, bool create_variable, unordered_map<string, VARIABLE>& variable_table, ostream& info) {
     bool result = SUCCEED;
 
@@ -1048,7 +1052,7 @@ bool CalcByTree_BRACKET(CONST_OR_VARIABLE& ans, const NODE* root, bool create_va
     CONST_OR_VARIABLE ans1;
     FAIL_THEN_RETURN(CalcByTree(ans1, root->child[0], create_variable, variable_table, info));
 
-    CalcArray(ans, *ans1.val, pos, create_variable, info);
+    FAIL_THEN_RETURN(CalcArray(ans, *ans1.val, pos, create_variable, info));
 
     ans1.del();
     return SUCCEED;
@@ -1141,7 +1145,7 @@ bool CalcByTree_IS_USER_FUNC_OR_ARRAY(const NODE* root, CONST_OR_VARIABLE& ans, 
         for (auto i : par) {
             pos.push_back(size_t(i));
         }
-        CalcArray(ans, *arr, pos, create_variable, info);
+        FAIL_THEN_RETURN(CalcArray(ans, *arr, pos, create_variable, info));
         
         for (auto i : par) {
             i.del();
