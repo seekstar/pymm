@@ -7,7 +7,7 @@
 #include "MyInteger.h"
 #include "MyMatrix.h"
 #include "MyDouble.h"
-#include "fraction.h"
+#include "big_fraction.h"
 
 //fundamental type
 enum VAL_TYPE{
@@ -70,7 +70,7 @@ struct VALUE {
 				val = new IntType(*(bool*)tmp);
 				break;
 			case IS_FRACTION:
-				val = new IntType(*(FRACTION*)tmp);
+				val = new IntType(((FRACTION*)tmp)->numerator / ((FRACTION*)tmp)->denominator);
 				break;
 			}
 			break;
@@ -205,7 +205,7 @@ struct VALUE {
 				ans.val = new IntType(*(IntType*)val + (int)*(bool*)rhs.val);
 				break;
 			case IS_FRACTION:
-				ans.GetFractionThenClean(*(IntType*)val + *(FRACTION*)rhs.val);
+				ans.GetFractionThenClean((FRACTION)*(IntType*)val + *(FRACTION*)rhs.val);
 				break;
             }
             break;
@@ -279,7 +279,7 @@ struct VALUE {
 				*(IntType*)ans.val = *(IntType*)val - (int)*(bool*)rhs.val;
 				break;
 			case IS_FRACTION:
-				ans.GetFractionThenClean(*(IntType*)val - *(FRACTION*)rhs.val);
+				ans.GetFractionThenClean((FRACTION)*(IntType*)val - *(FRACTION*)rhs.val);
 				break;
             }
             break;
@@ -371,7 +371,7 @@ struct VALUE {
 				*(IntType*)ans.val = *(IntType*)val * (int)*(bool*)rhs.val;
 				break;
 			case IS_FRACTION:
-				ans.GetFractionThenClean(*(IntType*)val * *(FRACTION*)rhs.val);
+				ans.GetFractionThenClean((FRACTION)*(IntType*)val * *(FRACTION*)rhs.val);
 				break;
             }
             break;
@@ -409,7 +409,7 @@ struct VALUE {
 				*(bool*)ans.val = *(bool*)val && *(bool*)rhs.val;
 				break;
 			case IS_FRACTION:
-				ans.GetFractionThenClean((IntType)(int)*(bool*)val * *(FRACTION*)rhs.val);
+				ans.GetFractionThenClean((FRACTION)(IntType)(int)*(bool*)val * *(FRACTION*)rhs.val);
 				break;
 			}
 			break;
@@ -449,7 +449,7 @@ struct VALUE {
 				*(IntType*)ans.val = *(IntType*)val / (int)*(bool*)rhs.val;
 				break;
 			case IS_FRACTION:
-				ans.GetFractionThenClean(*(IntType*)val / *(FRACTION*)rhs.val);
+				ans.GetFractionThenClean((FRACTION)*(IntType*)val / *(FRACTION*)rhs.val);
 				break;
             }
             break;
