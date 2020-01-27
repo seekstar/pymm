@@ -61,7 +61,7 @@ int NumOfBranches(const NODE* root) {
 	}
 }
 bool LastChildHasSibling(const NODE* root, int i) {
-	return root && root->child[i-1] ? (root->child[i-1]->sibling != NULL) : false;
+	return root ? (root->child[i-1]->sibling != NULL) : false;
 }
 void PrintABranchWithNext(ostream& res, NODE* root, MyQueue<MyString>& lines, vector<size_t>& rec_branch) {
 	PrintTree(res, root, lines, rec_branch);
@@ -73,6 +73,7 @@ void PrintBranches(ostream& res, NODE* root, MyQueue<MyString>& lines, vector<si
 
 	PrintABranch(lines, rec_branch);
 
+	bool lastHasSibling;
 	int num_branch = NumOfBranches(root);
 	int i;
 	if (num_branch == 1) {
@@ -84,7 +85,7 @@ void PrintBranches(ostream& res, NODE* root, MyQueue<MyString>& lines, vector<si
 			PrintABranchWithNext(res, root->child[i], lines, rec_branch);
 		}
 	}
-	bool lastHasSibling = LastChildHasSibling(root, i+1);
+	lastHasSibling = LastChildHasSibling(root, i+1);
 	if (!lastHasSibling)
 		rec_branch.pop_back();
 	PrintTree(res, root->child[i], lines, rec_branch);

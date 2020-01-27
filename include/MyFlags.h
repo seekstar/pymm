@@ -2,7 +2,6 @@
 #define MYFLAGS_H_INCLUDED
 
 #define DEBUG 0
-#define PRINT_TREE 1
 
 #define FAIL_THEN_RETURN(x) {if (FAIL == x) return FAIL;}
 

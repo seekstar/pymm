@@ -56,7 +56,7 @@ struct PYMM{
         auto now = strExpr.begin();
         FAIL_THEN_RETURN(Parsing(root, now, info));
 
-#if DEBUG || PRINT_TREE
+#if DEBUG
         PrintTree(cerr, root);
 #endif
 
