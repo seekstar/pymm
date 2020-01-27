@@ -198,7 +198,7 @@ struct VALUE {
                 break;
             case IS_DOUBLE:
 				ans.type = IS_DOUBLE;
-				ans.val = new double((*(IntType*)val) + *(double*)rhs.val);
+				ans.val = new double((double)*(IntType*)val + *(double*)rhs.val);
                 break;
 			case IS_BOOL:
 				ans.type = IS_INTEGER;

@@ -1,9 +1,13 @@
+/*!
+ * Version: 	1.0
+ * Description:	Fraction of big integer
+ */
+
 #ifndef FRACTION_H_
 #define FRACTION_H_
 
 #include "SignedBigInt.h"
 #include "MyMath.h"
-#include "MyString.h"
 
 using namespace std;
 

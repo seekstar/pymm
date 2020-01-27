@@ -1,3 +1,8 @@
+/*!
+ * Version: 	1.0
+ * Description:	Fraction of big integer
+ */
+
 #include "fraction.h"
 
 FRACTION:: FRACTION(const IntType& numerator, const IntType& denominator) {

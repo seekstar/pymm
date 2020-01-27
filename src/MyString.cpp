@@ -11,12 +11,18 @@ void SkipSpaceExceptEnter(const char*& str) {
 		++str;
 }
 
-//MyString.txt
 int MyAtoi(const char* str, int len)
 {
     int ans = 0;
     for(int i = 0; i < len; i++)
         ans = ans * 10 + str[i] - '0';
+    return ans;
+}
+
+int MyAtoi(const char* s, const char* t) {
+    int ans = 0;
+    for (; s != t; ++s)
+        (ans *= 10) += *s - '0';
     return ans;
 }
 

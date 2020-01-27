@@ -1,14 +1,13 @@
+/*!
+ * Version: 1.0
+ * Description: ACM style unsigned big integer.
+ */
+
 #include "UnsignedBigInt.h"
 
 using namespace std;
 
-UnsignedBigInt operator + (LL a, const UnsignedBigInt& b)
-{
-    return b + a;
-}
-
-UnsignedBigInt operator * (int a, const UnsignedBigInt& b)
-{
+UnsignedBigInt operator * (int a, const UnsignedBigInt& b) {
     return b * a;
 }
 
@@ -36,6 +35,37 @@ bool operator != (int lhs, const UnsignedBigInt& rhs) {
     return !(lhs == rhs);
 }
 
+bool operator < (double lhs, const UnsignedBigInt& rhs) {
+    return lhs < (double)rhs;
+}
+bool operator <= (double lhs, const UnsignedBigInt& rhs) {
+    return lhs <= (double)rhs;
+}
+bool operator > (double lhs, const UnsignedBigInt& rhs) {
+    return lhs > (double)rhs;
+}
+bool operator >= (double lhs, const UnsignedBigInt& rhs) {
+    return lhs >= (double)rhs;
+}
+bool operator == (double lhs, const UnsignedBigInt& rhs) {
+    return lhs == (double)rhs;
+}
+bool operator != (double lhs, const UnsignedBigInt& rhs) {
+    return lhs != (double)rhs;
+}
+
+double operator + (double lhs, const UnsignedBigInt& rhs) {
+    return lhs + (double)rhs;
+}
+double operator - (double lhs, const UnsignedBigInt& rhs) {
+    return lhs - (double)rhs;
+}
+double operator * (double lhs, const UnsignedBigInt& rhs) {
+    return lhs * (double)rhs;
+}
+double operator / (double lhs, const UnsignedBigInt& rhs) {
+    return lhs / (double)rhs;
+}
 
 UnsignedBigInt sqrt(const UnsignedBigInt& x, int m)
 {
@@ -87,11 +117,11 @@ UnsignedBigInt sqrt(const UnsignedBigInt& x, int m)
         }
         x0.s[0] = L;
     }
-    else 
+    else
     {
-        int mov = (n / m) >> 1;//�������ұߵ�λ��
+        int mov = (n / m) >> 1;//??????????ï¿½ï¿½??
         x0.s.assign(x.s.begin() + mov * m, x.s.end());
-        x0 = (sqrt(x0, m)+1).Move_left_BASE(mov);//+1,ʹ��������
+        x0 = (sqrt(x0, m)+1).Move_left_BASE(mov);//+1,?????????
         UnsignedBigInt x1;
         do
         {
@@ -106,13 +136,11 @@ UnsignedBigInt sqrt(const UnsignedBigInt& x, int m)
     return x0;
 }
 
-ostream& operator << (ostream& out, const UnsignedBigInt& a)
-{
+ostream& operator << (ostream& out, const UnsignedBigInt& a) {
     return out << (string)a;
 }
 
-istream& operator >> (istream& in, UnsignedBigInt& a)
-{
+istream& operator >> (istream& in, UnsignedBigInt& a) {
     string str;
     if(in >> str)
         a = str;
