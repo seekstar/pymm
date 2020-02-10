@@ -23,9 +23,11 @@ DEPS		:= $(patsubst $(SRC)%.cpp,$(DEP)/%.d,$(SRCS))
 ifeq ($(OS),Windows_NT)
 EXECUTABLE	:= main.exe
 RM 			:= del
+THREAD		:= 1
 else
 EXECUTABLE	:= main
 RM 			:= rm -f
+THREAD		:= $(shell grep 'processor' /proc/cpuinfo | sort -u | wc -l)
 endif
 
 clean_debug:
@@ -48,29 +50,37 @@ $(DEP)/%.d: $(SRC)%.cpp
 -include $(DEPS)
 
 
-build_debug: $(BIN_DEBUG)/$(EXECUTABLE)
 $(BIN_DEBUG)/$(EXECUTABLE): $(OBJS_DEBUG)
 	$(CC) $^ -o $@ $(LIBRARIES)
 
 $(OBJ_DEBUG)/%.o: $(SRC)/%.cpp $(DEP)/%.d
 	$(CC) $(FLAGS_DEBUG) -c -I$(INCLUDE) -L$(LIB) $< -o $@
 
+build_debug0: $(BIN_DEBUG)/$(EXECUTABLE)
+build_debug:
+	make build_debug0 -j$(THREAD)
+
 run_debug: build_debug
 	./$(BIN_DEBUG)/$(EXECUTABLE)
 
 
 
-build_release: $(BIN_RELEASE)/$(EXECUTABLE)
 $(BIN_RELEASE)/$(EXECUTABLE): $(OBJS_RELEASE)
 	$(CC) $^ -o $@ $(LIBRARIES)
 
 $(OBJ_RELEASE)/%.o: $(SRC)/%.cpp $(DEP)/%.d
 	$(CC) $(FLAGS_RELEASE) -c -I$(INCLUDE) -L$(LIB) $< -o $@
 
+build_release0: $(BIN_RELEASE)/$(EXECUTABLE)
+build_release:
+	make build_release0 -j$(THREAD)
+
 run_release: build_release
 	./$(RELEASE_BIN)/$(EXECUTABLE)
 
-all: build_debug build_release
+all0: build_debug0 build_release0
+all:
+	make all0 -j$(THREAD)
 
-.PHONY: clean_debug clean_release clean build_debug run_debug build_release run_release all
+.PHONY: clean_debug clean_release clean build_debug build_debug0 run_debug build_release build_release0 run_release all0 all
 
