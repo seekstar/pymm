@@ -10,7 +10,7 @@ It relies on nothing but C++ standard library.
 
 ##### data type
 
-1. Four basic data type:
+1. Four basic data types:
 
     - big integer
     - double
